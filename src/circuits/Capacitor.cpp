@@ -1,0 +1,32 @@
+#include "Capacitor.hpp"
+#include "Circuit.hpp"
+#include <iostream>
+
+Capacitor::Capacitor(double C, int n1, int n2) : C(C), node1(n1), node2(n2) {}
+
+void Capacitor::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I,
+                      double currentTime, double dt) {
+  double Geq = C / dt;
+  double Ieq = Geq * prevVoltage;
+
+  if (!Circuit::isNodeGround(node1)) {
+    G(node1, node1) += Geq;
+    I(node1) -= Ieq;
+    if (!Circuit::isNodeGround(node2)) {
+      G(node1, node2) -= Geq;
+      G(node2, node1) -= Geq;
+    }
+  }
+  if (!Circuit::isNodeGround(node2)) {
+    G(node2, node2) += Geq;
+    I(node2) += Ieq;
+  }
+}
+
+void Capacitor::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
+  double vNode1 = Circuit::isNodeGround(node1) ? 0.0 : V(node1);
+  double vNode2 = Circuit::isNodeGround(node2) ? 0.0 : V(node2);
+  prevVoltage = vNode2 - vNode1;
+}
+
+void Capacitor::initializeState() { prevVoltage = 0.0; }
