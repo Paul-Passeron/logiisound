@@ -1,7 +1,8 @@
-*
-
-!src/
-!src/**/*
-!assets/**/*.png
-!CMakeLists.txt
-!.gitignore
+build/*
+vendor/*
+assets/icons/*.svg
+assets/sounds/*
+assets/*.mp3
+assets/*.wav
+.cache/*
+.gitignore

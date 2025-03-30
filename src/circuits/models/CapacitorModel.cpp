@@ -1,6 +1,6 @@
 #include "CapacitorModel.hpp"
-#include "../core/Application.hpp"
-#include "Circuit.hpp"
+#include "../../core/Application.hpp"
+#include "../Circuit.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <filesystem>

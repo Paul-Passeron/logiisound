@@ -70,12 +70,13 @@ set(SOURCES
   src/audio/engine/AudioEngine.cpp src/audio/engine/AudioEngine.hpp
   src/circuits/Circuit.cpp src/circuits/Circuit.hpp
 
-  src/circuits/ComponentModel.cpp src/circuits/ComponentModel.hpp
-  src/circuits/DiodeModel.cpp src/circuits/DiodeModel.hpp
-  src/circuits/ResistorModel.cpp src/circuits/ResistorModel.hpp
-  src/circuits/CapacitorModel.cpp src/circuits/CapacitorModel.hpp
-  src/circuits/VoltageSourceModel.cpp src/circuits/VoltageSourceModel.hpp
-  src/circuits/transistors/BJTs/NPNModel.cpp src/circuits/transistors/BJTs/NPNModel.hpp
+  src/circuits/models/ComponentModel.cpp src/circuits/models/ComponentModel.hpp
+  src/circuits/models/DiodeModel.cpp src/circuits/models/DiodeModel.hpp
+  src/circuits/models/ResistorModel.cpp src/circuits/models/ResistorModel.hpp
+  src/circuits/models/CapacitorModel.cpp src/circuits/models/CapacitorModel.hpp
+  src/circuits/models/VoltageSourceModel.cpp src/circuits/models/VoltageSourceModel.hpp
+  src/circuits/models/transistors/BJTs/NPNModel.cpp src/circuits/models/transistors/BJTs/NPNModel.hpp
+
   src/circuits/ComponentRegistry.cpp src/circuits/ComponentRegistry.hpp
 )
 

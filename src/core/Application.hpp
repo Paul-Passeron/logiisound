@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../audio/engine/AudioEngine.hpp"
-#include "../circuits/ComponentModel.hpp"
+#include "../circuits/models/ComponentModel.hpp"
 #include "Editor.hpp"
 #include <SDL_video.h>
 #include <eigen3/Eigen/Dense>
@@ -9,8 +9,8 @@
 #include <imgui_impl_sdl2.h>
 #include <string>
 
-using std::string;
 using std::pair;
+using std::string;
 
 class Application {
   SDL_Window *window = nullptr;

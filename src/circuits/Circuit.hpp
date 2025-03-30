@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ComponentModel.hpp"
+#include "models/ComponentModel.hpp"
 #include <eigen3/Eigen/Sparse>
 
 class Circuit {

@@ -13,7 +13,7 @@ class Editor {
   ImVec2 mousePos;
   bool focused = false;
 
-  double getScaleFactor();
+  double getScaleFactor() const;
   void renderGrid();
 
   ImVec2 screenToGrid(const ImVec2 &screenPos, const ImVec2 &windowPos) const;

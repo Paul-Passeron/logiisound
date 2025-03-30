@@ -1,5 +1,5 @@
 #include "VoltageSourceModel.hpp"
-#include "Circuit.hpp"
+#include "../Circuit.hpp"
 
 VoltageSourceModel::VoltageSourceModel(double v, int p, int n)
     : voltage(v), posNode(p), negNode(n), called(false), index(-1) {}

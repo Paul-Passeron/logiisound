@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-double Editor::getScaleFactor() { return 10.0 * zoom; }
+double Editor::getScaleFactor() const { return 50.0 * zoom; }
 
 void Editor::renderGrid() {
   double scaleFactor = getScaleFactor();
@@ -66,16 +66,19 @@ void Editor::handleEvent(SDL_Event event) {
 
 ImVec2 Editor::screenToGrid(const ImVec2 &screenPos,
                             const ImVec2 &windowPos) const {
-  float scaleFactor = 10.0f * zoom;
+  float scaleFactor = getScaleFactor();
   return ImVec2((screenPos.x - windowPos.x - offset.x) / scaleFactor,
                 (screenPos.y - windowPos.y - offset.y) / scaleFactor);
 }
 
 ImVec2 Editor::gridToScreen(const ImVec2 &gridPos,
                             const ImVec2 &windowPos) const {
-  float scaleFactor = 10.0f * zoom;
+  float scaleFactor = getScaleFactor();
   return ImVec2(gridPos.x * scaleFactor + offset.x + windowPos.x,
                 gridPos.y * scaleFactor + offset.y + windowPos.y);
 }
 
-void Editor::setComponentId(string id) { current_component_id = id; std::cout << "Current component is: " << id << std::endl;}
+void Editor::setComponentId(string id) {
+  current_component_id = id;
+  std::cout << "Current component is: " << id << std::endl;
+}

@@ -1,9 +1,8 @@
 #include "Circuit.hpp"
-#include "ComponentModel.hpp"
-#include "VoltageSourceModel.hpp"
+#include "models/ComponentModel.hpp"
+#include "models/VoltageSourceModel.hpp"
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/src/Core/Matrix.h>
-#include <iostream>
 #include <stdexcept>
 
 bool Circuit::isNodeGround(int node) { return node < 0; }

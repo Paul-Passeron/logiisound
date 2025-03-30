@@ -1,10 +1,10 @@
 #include "NPNModel.hpp"
-#include "../../Circuit.hpp"
+#include "../../../Circuit.hpp"
 #include <stdexcept>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "../../../core/Application.hpp"
+#include "../../../../core/Application.hpp"
 #include <filesystem>
 
 

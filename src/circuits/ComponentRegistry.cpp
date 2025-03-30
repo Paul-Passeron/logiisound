@@ -1,8 +1,8 @@
 #include "ComponentRegistry.hpp"
-#include "CapacitorModel.hpp"
-#include "DiodeModel.hpp"
-#include "ResistorModel.hpp"
-#include "transistors/BJTs/NPNModel.hpp"
+#include "models/CapacitorModel.hpp"
+#include "models/DiodeModel.hpp"
+#include "models/ResistorModel.hpp"
+#include "models/transistors/BJTs/NPNModel.hpp"
 #include <iostream>
 
 void registerComponents() {

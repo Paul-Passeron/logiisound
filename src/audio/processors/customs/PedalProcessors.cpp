@@ -1,9 +1,9 @@
 #include "PedalProcessors.hpp"
-#include "../../../circuits/CapacitorModel.hpp"
-#include "../../../circuits/DiodeModel.hpp"
-#include "../../../circuits/ResistorModel.hpp"
-#include "../../../circuits/VoltageSourceModel.hpp"
-#include "../../../circuits/transistors/BJTs/NPNModel.hpp"
+#include "../../../circuits/models/CapacitorModel.hpp"
+#include "../../../circuits/models/DiodeModel.hpp"
+#include "../../../circuits/models/ResistorModel.hpp"
+#include "../../../circuits/models/VoltageSourceModel.hpp"
+#include "../../../circuits/models/transistors/BJTs/NPNModel.hpp"
 
 CircuitProcessor *PedalProcessors::FuzzProcessor() {
   // int nodeCount = -1;
