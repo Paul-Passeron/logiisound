@@ -1,0 +1,7 @@
+*
+
+!src/
+!src/**/*
+!assets/**/*.png
+!CMakeLists.txt
+!.gitignore
