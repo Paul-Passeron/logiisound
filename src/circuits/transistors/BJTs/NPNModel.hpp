@@ -1,4 +1,4 @@
-#include "../../Component.hpp"
+#include "../../ComponentModel.hpp"
 
 struct NPNModelParameters {
   double Is;   // Sat. current
@@ -17,7 +17,7 @@ struct NPNModelParameters {
   double Vtf;  // Transit time dependance on Vbc
 };
 
-class NPN : public Component {
+class NPNModel : public ComponentModel {
 private:
   int b, c, e; // Base, Collector, Emitter nodes
   double Vt;   // Thermal voltage (≈26mV at room temperature)
@@ -51,10 +51,10 @@ private:
   void stampEmitterCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I);
 
 public:
-  NPN(int b, int c, int e,
+  NPNModel(int b, int c, int e,
       const std::string &modelName);     // Use predefined model
-  NPN(int b, int c, int e, double beta); // Simple model with custom beta
-  NPN(int b, int c, int e,
+  NPNModel(int b, int c, int e, double beta); // Simple model with custom beta
+  NPNModel(int b, int c, int e,
       const NPNModelParameters &customParams); // Fully custom model
 
   NPNModelParameters getParameters() const;

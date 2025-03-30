@@ -1,10 +1,17 @@
-#include "NPN.hpp"
+#include "NPNModel.hpp"
 #include "../../Circuit.hpp"
 #include <stdexcept>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include "../../../core/Application.hpp"
+#include <filesystem>
+
+
+
 // TODO: add more transistors + verify values
 
-std::unordered_map<std::string, NPNModelParameters> NPN::modelLibrary = {
+std::unordered_map<std::string, NPNModelParameters> NPNModel::modelLibrary = {
     {"BC337",
      {
          .Is = 5.09e-14,  // Saturation current (A)
@@ -57,7 +64,7 @@ std::unordered_map<std::string, NPNModelParameters> NPN::modelLibrary = {
          .Vtf = 1.7      // Transit time dependence on Vbc
      }}};
 
-NPN::NPN(int b, int c, int e, const std::string &modelName)
+NPNModel::NPNModel(int b, int c, int e, const std::string &modelName)
     : b(b), c(c), e(e), Vt(0.026) {
   if (modelLibrary.find(modelName) == modelLibrary.end()) {
     throw std::runtime_error("Bad model name " + modelName + ".");
@@ -68,17 +75,19 @@ NPN::NPN(int b, int c, int e, const std::string &modelName)
   initializeState();
 }
 
-NPN::NPN(int b, int c, int e, double beta) : NPN(b, c, e, "BC337") {
+
+NPNModel::NPNModel(int b, int c, int e, double beta) : NPNModel(b, c, e, "BC337") {
   params.Bf = beta;
   model = "Custom";
 }
 
-NPN::NPN(int b, int c, int e, const NPNModelParameters &customParams)
+
+NPNModel::NPNModel(int b, int c, int e, const NPNModelParameters &customParams)
     : b(b), c(c), e(e), Vt(0.026), params(customParams), model("Custom") {
   initializeState();
 }
 
-void NPN::initializeState() {
+void NPNModel::initializeState() {
   // Reset all state variables
   Ic = 0.0;
   Ib = 0.0;
@@ -91,8 +100,15 @@ void NPN::initializeState() {
   dIc_dVbc = 1e-9;
   dIb_dVbe = 1e-9;
   dIb_dVbc = 1e-9;
+  SDL_Renderer *renderer =
+      SDL_GetRenderer(Application::getInstance()->getWindow());
+      std::filesystem::path p = std::filesystem::current_path().parent_path() /
+                                "assets/icons/npn.png";
+      texture_ = IMG_LoadTexture(renderer, p.c_str());
 }
-void NPN::stampBaseCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
+
+
+void NPNModel::stampBaseCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   if (!Circuit::isNodeGround(b)) {
     I(b) -= IBE_eq + IBC_eq;
     G(b, b) += g_mu + g_pi;
@@ -105,7 +121,7 @@ void NPN::stampBaseCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   }
 }
 
-void NPN::stampCollectorCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
+void NPNModel::stampCollectorCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   if (!Circuit::isNodeGround(c)) {
     I(c) += IBC_eq - ICE_eq;
     G(c, c) += g_0 + g_mu;
@@ -118,7 +134,7 @@ void NPN::stampCollectorCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   }
 }
 
-void NPN::stampEmitterCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
+void NPNModel::stampEmitterCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   if (!Circuit::isNodeGround(e)) {
     I(e) += IBE_eq + ICE_eq;
     G(e, e) += g_pi + g_0 + g_m;
@@ -131,7 +147,7 @@ void NPN::stampEmitterCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   }
 }
 
-void NPN::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) {
+void NPNModel::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) {
   stampBaseCurrent(G, I);
   stampCollectorCurrent(G, I);
   stampEmitterCurrent(G, I);
@@ -180,7 +196,7 @@ void NPN::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) {
 //   ICE_eq = I_t - g_m * Vbe + g_0 * Vce;
 // }
 
-void NPN::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
+void NPNModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
   // Get node voltages
   double Vb = Circuit::isNodeGround(b) ? 0.0 : V(b);
   double Vc = Circuit::isNodeGround(c) ? 0.0 : V(c);

@@ -1,6 +1,6 @@
 #include "Circuit.hpp"
-#include "Component.hpp"
-#include "VoltageSource.hpp"
+#include "ComponentModel.hpp"
+#include "VoltageSourceModel.hpp"
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/src/Core/Matrix.h>
 #include <iostream>
@@ -8,7 +8,7 @@
 
 bool Circuit::isNodeGround(int node) { return node < 0; }
 
-int Circuit::addComponent(Component *comp) {
+int Circuit::addComponent(ComponentModel *comp) {
   components.emplace_back(comp);
   int res = components.size() - 1;
   stamp(G, I, 0, 1); // stamping to update I and G sizes for getLastIndex
@@ -33,9 +33,9 @@ void Circuit::solveTransient(double start, double dt, size_t numSamples,
 
   double t = start;
 
-  VoltageSource *v = nullptr;
+  VoltageSourceModel *v = nullptr;
   if (components.size() > inputNode || inputNode < 0) {
-    v = dynamic_cast<VoltageSource *>(components[inputNode]);
+    v = dynamic_cast<VoltageSourceModel *>(components[inputNode]);
   }
   if (!v) {
     throw std::runtime_error("Input is not a voltage source.\n");

@@ -1,9 +1,9 @@
 #include "PedalProcessors.hpp"
-#include "../../../circuits/Capacitor.hpp"
-#include "../../../circuits/Diode.hpp"
-#include "../../../circuits/Resistor.hpp"
-#include "../../../circuits/VoltageSource.hpp"
-#include "../../../circuits/transistors/BJTs/NPN.hpp"
+#include "../../../circuits/CapacitorModel.hpp"
+#include "../../../circuits/DiodeModel.hpp"
+#include "../../../circuits/ResistorModel.hpp"
+#include "../../../circuits/VoltageSourceModel.hpp"
+#include "../../../circuits/transistors/BJTs/NPNModel.hpp"
 
 CircuitProcessor *PedalProcessors::FuzzProcessor() {
   // int nodeCount = -1;
@@ -64,22 +64,22 @@ CircuitProcessor *PedalProcessors::FuzzProcessor() {
 
   int outputNode = nodePreClip;
 
-  Capacitor *c1 = new Capacitor(
+  CapacitorModel *c1 = new CapacitorModel(
       0.47e-6, nodeIn, nodeB); // Larger input capacitor for more bottom end
-  Capacitor *c2 = new Capacitor(0.2e-6, nodeC, nodePreClip);
-  Resistor *r1 = new Resistor(470e3, nodeB, nodeC); // Adjusted for more gain
-  Resistor *r2 = new Resistor(200, nodeE, gnd); // Lower resistor for more gain
-  Resistor *r3 = new Resistor(10e3, nodeC, nodePowerCap);
-  Resistor *r4 = new Resistor(100e3, nodePreClip, gnd);
-  Resistor *r5 = new Resistor(100e3, nodeD, gnd);
-  VoltageSource *v1 = new VoltageSource(0, nodeIn, gnd);
-  VoltageSource *v2 = new VoltageSource(9, nodePowerCap, gnd);
-  NPN *t1 = new NPN(nodeB, nodeC, nodeE, "2N3904");
+  CapacitorModel *c2 = new CapacitorModel(0.2e-6, nodeC, nodePreClip);
+  ResistorModel *r1 = new ResistorModel(470e3, nodeB, nodeC); // Adjusted for more gain
+  ResistorModel *r2 = new ResistorModel(200, nodeE, gnd); // Lower resistor for more gain
+  ResistorModel *r3 = new ResistorModel(10e3, nodeC, nodePowerCap);
+  ResistorModel *r4 = new ResistorModel(100e3, nodePreClip, gnd);
+  ResistorModel *r5 = new ResistorModel(100e3, nodeD, gnd);
+  VoltageSourceModel *v1 = new VoltageSourceModel(0, nodeIn, gnd);
+  VoltageSourceModel *v2 = new VoltageSourceModel(9, nodePowerCap, gnd);
+  NPNModel *t1 = new NPNModel(nodeB, nodeC, nodeE, "2N3904");
 
   // Use LEDs for more pronounced clipping
-  Diode *led1 = new Diode(nodeD, nodeLEDClip, "1N5817"); // LED characteristics
-  Diode *led2 = new Diode(nodeLEDClip, nodeF, "BAT41");
-  Diode *led3 = new Diode(nodeF, nodeD, "BAT41");
+  DiodeModel *led1 = new DiodeModel(nodeD, nodeLEDClip, "1N5817"); // LED characteristics
+  DiodeModel *led2 = new DiodeModel(nodeLEDClip, nodeF, "BAT41");
+  DiodeModel *led3 = new DiodeModel(nodeF, nodeD, "BAT41");
 
   Circuit *c = new Circuit(nodeCount);
   c->addComponent(c1);
@@ -111,9 +111,9 @@ CircuitProcessor *PedalProcessors::LowPassProcessor(double R, double C) {
   int nodeB = nodeCount++;
 
   Circuit *c = new Circuit(nodeCount);
-  VoltageSource *v1 = new VoltageSource(0.0, nodeA, gnd);
-  Resistor *r1 = new Resistor(R, nodeB, gnd);
-  Capacitor *c1 = new Capacitor(C, nodeA, nodeB);
+  VoltageSourceModel *v1 = new VoltageSourceModel(0.0, nodeA, gnd);
+  ResistorModel *r1 = new ResistorModel(R, nodeB, gnd);
+  CapacitorModel *c1 = new CapacitorModel(C, nodeA, nodeB);
   int inputIndex = c->addComponent(v1);
   c->addComponent(c1);
   c->addComponent(r1);

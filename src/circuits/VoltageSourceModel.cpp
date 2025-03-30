@@ -1,10 +1,10 @@
-#include "VoltageSource.hpp"
+#include "VoltageSourceModel.hpp"
 #include "Circuit.hpp"
 
-VoltageSource::VoltageSource(double v, int p, int n)
+VoltageSourceModel::VoltageSourceModel(double v, int p, int n)
     : voltage(v), posNode(p), negNode(n), called(false), index(-1) {}
 
-void VoltageSource::stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs,
+void VoltageSourceModel::stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs,
                           double currentTime, double dt) {
 
   int size = matrix.cols();
@@ -30,4 +30,4 @@ void VoltageSource::stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs,
   rhs(size) = voltage;
 }
 
-void VoltageSource::setVoltage(double v) { voltage = v; }
+void VoltageSourceModel::setVoltage(double v) { voltage = v; }

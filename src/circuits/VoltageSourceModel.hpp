@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Component.hpp"
+#include "ComponentModel.hpp"
 
-class VoltageSource : public Component {
+class VoltageSourceModel : public ComponentModel {
 protected:
   double voltage;
   int posNode, negNode;
   bool called = false;
   int index = -1;
 public:
-  VoltageSource(double v, int p, int n);
+  VoltageSourceModel(double v, int p, int n);
   void setVoltage(double v);
   void stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs, double currentTime, double dt) override;
 };

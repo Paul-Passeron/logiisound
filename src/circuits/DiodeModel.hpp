@@ -1,26 +1,6 @@
-// #pragma once
-
-// #include "Component.hpp"
-// #include <eigen3/Eigen/Dense>
-
-// class Diode : public Component {
-//   int anode;
-//   int cathode;
-//   double Is = 1e-12; // Saturation current
-//   double Vt = 0.26; // 26 mV
-//   double currentVoltageGuess = 0.1;
-//   double lastVd;
-//   double lastId;
-// public:
-//   Diode(int anode, int cathode, double Is = 1e-12, double Vt = 0.26);
-//   void stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t,
-//              double dt) override;
-//   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
-// };
-
 #pragma once
 
-#include "Component.hpp"
+#include "ComponentModel.hpp"
 #include <unordered_map>
 #include <string>
 
@@ -33,7 +13,7 @@ struct DiodeModelParameters {
   double Tt;  // Transit time
 };
 
-class Diode : public Component {
+class DiodeModel : public ComponentModel {
 private:
   int anode, cathode;
   double Vt;  // Thermal voltage
@@ -50,8 +30,8 @@ private:
   void stampCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I);
 
 public:
-  Diode(int anode, int cathode, const std::string &modelName);
-  Diode(int anode, int cathode, const DiodeModelParameters &customParams);
+  DiodeModel(int anode, int cathode, const std::string &modelName);
+  DiodeModel(int anode, int cathode, const DiodeModelParameters &customParams);
 
   DiodeModelParameters getParameters() const;
   void setParameter(const std::string &param, double value);

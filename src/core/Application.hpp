@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../audio/engine/AudioEngine.hpp"
+#include "../circuits/ComponentModel.hpp"
+#include "Editor.hpp"
 #include <SDL_video.h>
 #include <eigen3/Eigen/Dense>
 #include <imgui.h>
@@ -8,19 +10,23 @@
 #include <string>
 
 using std::string;
+using std::pair;
 
 class Application {
   SDL_Window *window = nullptr;
   SDL_GLContext glContext;
   ImGuiIO *io = nullptr;
   bool isRunning = false;
-
+  SDL_Renderer *renderer;
   AudioEngine *engine = nullptr;
+  Editor editor;
 
   bool isAudioPlaying = false;
   vector<Eigen::VectorXd> history;
   static Application *instance;
   int numStates;
+
+  vector<pair<string, ComponentModel *>> componentDisplayed;
 
 public:
   Application();
@@ -30,6 +36,7 @@ public:
   void setNumState(int n);
   static Application *getInstance();
   SDL_Window *getWindow();
+  SDL_Renderer *getRenderer();
 
 private:
   void init();
@@ -42,7 +49,7 @@ private:
   void renderNewBlankFrame();
   void renderFrame();
   static const char *getTitle();
-  static bool loadAudioFile(const std::string &path, vector<float> &audioData);
   void onPlayPressed();
   void onBrowsePressed();
+  void renderComponentView();
 };
