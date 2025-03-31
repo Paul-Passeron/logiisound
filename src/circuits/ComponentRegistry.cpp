@@ -1,19 +1,22 @@
 #include "ComponentRegistry.hpp"
+#include "../core/Application.hpp"
 #include "models/CapacitorModel.hpp"
 #include "models/DiodeModel.hpp"
 #include "models/ResistorModel.hpp"
 #include "models/transistors/BJTs/NPNModel.hpp"
+#include <SDL_image.h>
 #include <iostream>
 
 void registerComponents() {
   ComponentRegistry &instance = ComponentRegistry::instance();
-  instance.registerComponent("res", "Resistor",
+  path prefix = std::filesystem::current_path().parent_path() / "assets/icons";
+  instance.registerComponent("res", "Resistor", prefix / "resistor.png",
                              []() { return new ResistorModel(1, -1, -1); });
-  instance.registerComponent("cap", "Capacitor",
+  instance.registerComponent("cap", "Capacitor", prefix / "capacitor.png",
                              []() { return new CapacitorModel(1, -1, -1); });
-  instance.registerComponent("diode", "Diode",
+  instance.registerComponent("diode", "Diode", prefix / "diode.png",
                              []() { return new DiodeModel(-1, -1, "1N4148"); });
-  instance.registerComponent("npn", "NPN Transistor", []() {
+  instance.registerComponent("npn", "NPN Transistor", prefix / "npn.png", []() {
     return new NPNModel(-1, -1, -1, "2N3904");
   });
 }
@@ -24,9 +27,11 @@ ComponentRegistry &ComponentRegistry::instance() {
 }
 
 void ComponentRegistry::registerComponent(
-    const std::string &type, const std::string &name,
+    const std::string &type, const std::string &name, const path texturePath,
     std::function<ComponentModel *()> createFunction) {
-  registry[type] = {name, createFunction};
+  SDL_Renderer *renderer = Application::getInstance()->getRenderer();
+  SDL_Texture *tex = IMG_LoadTexture(renderer, texturePath.c_str());
+  registry[type] = {name, tex, createFunction};
   std::cout << "[INFO]: Registered component " << name << " with id " << type
             << std::endl;
 }
@@ -39,4 +44,11 @@ ComponentRegistry::getRegistry() const {
 ComponentModel *ComponentRegistry::createComponent(const std::string &type) {
   auto it = registry.find(type);
   return it != registry.end() ? it->second.createFunction() : nullptr;
+}
+
+void ComponentInfo::renderPreview(SDL_Renderer *renderer,
+                   const SDL_Rect &rect) {
+  if (SDL_RenderCopy(renderer, previewTexture, nullptr, &rect)) {
+    std::cerr << "ERROR: " << SDL_GetError() << std::endl;
+  }
 }

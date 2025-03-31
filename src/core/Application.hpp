@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../audio/engine/AudioEngine.hpp"
-#include "../circuits/models/ComponentModel.hpp"
 #include "Editor.hpp"
 #include <SDL_video.h>
 #include <eigen3/Eigen/Dense>
@@ -22,18 +21,13 @@ class Application {
   Editor editor;
 
   bool isAudioPlaying = false;
-  vector<Eigen::VectorXd> history;
   static Application *instance;
-  int numStates;
 
-  vector<pair<string, ComponentModel *>> componentDisplayed;
 
 public:
   Application();
   void shutdown();
   void run();
-  void setHistory(vector<Eigen::VectorXd> history);
-  void setNumState(int n);
   static Application *getInstance();
   SDL_Window *getWindow();
   SDL_Renderer *getRenderer();

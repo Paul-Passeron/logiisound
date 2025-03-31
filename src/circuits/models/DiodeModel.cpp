@@ -1,10 +1,8 @@
 #include "DiodeModel.hpp"
-#include "../../core/Application.hpp"
 #include "../Circuit.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cmath>
-#include <filesystem>
 #include <stdexcept>
 
 DiodeModelParameters oneN5817Parameters = {
@@ -59,12 +57,6 @@ void DiodeModel::initializeState() {
   currentVoltage = 0.0;
   currentCurrent = 0.0;
   conductance = 1e-9; // Tiny conductance to avoid division by zero
-
-  SDL_Renderer *renderer =
-      SDL_GetRenderer(Application::getInstance()->getWindow());
-  std::filesystem::path p = std::filesystem::current_path().parent_path() /
-                            "assets/icons/diode.png";
-  texture_ = IMG_LoadTexture(renderer, p.c_str());
 }
 
 void DiodeModel::stampCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {

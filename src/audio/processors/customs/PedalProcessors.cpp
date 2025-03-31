@@ -6,50 +6,6 @@
 #include "../../../circuits/models/transistors/BJTs/NPNModel.hpp"
 
 CircuitProcessor *PedalProcessors::FuzzProcessor() {
-  // int nodeCount = -1;
-  // int gnd = nodeCount++;
-  // int nodeIn = nodeCount++;
-  // int nodeB = nodeCount++;
-  // int nodeC = nodeCount++;
-  // int nodeE = nodeCount++;
-  // int nodeD = nodeCount++;
-  // int nodePowerCap = nodeCount++;
-  // int nodePreClip = nodeCount++;
-
-  // int outputNode = nodePreClip;
-
-  // Capacitor *c1 = new Capacitor(0.1e-6, nodeIn, nodeB);
-  // Capacitor *c2 = new Capacitor(0.1e-6, nodeC, nodePreClip);
-  // Resistor *r1 = new Resistor(2.2e6, nodeB, nodeC);
-  // Resistor *r2 = new Resistor(10e3, nodeE, gnd);
-  // Resistor *r3 = new Resistor(47e3, nodeC, nodePowerCap);
-  // Resistor *r4 = new Resistor(100e3, nodePreClip, gnd);
-  // Resistor *r5 = new Resistor(100e3,nodeD, gnd);
-  // VoltageSource *v1 = new VoltageSource(0, nodeIn, gnd);
-  // VoltageSource *v2 = new VoltageSource(9, nodePowerCap, gnd);
-  // NPN *t1 = new NPN(nodeB, nodeC, nodeE, "2N3904");
-  // Diode *d1 = new Diode(nodeD, nodePreClip);
-  // Diode *d2 = new Diode(nodePreClip, nodeD);
-
-  // Circuit *c = new Circuit(nodeCount);
-  // c->addComponent(c1);
-  // c->addComponent(c2);
-  // c->addComponent(r1);
-  // c->addComponent(r2);
-  // c->addComponent(r3);
-  // c->addComponent(r4);
-  // c->addComponent(t1);
-  // c->addComponent(d1);
-  // c->addComponent(d2);
-  // int inputIndex = c->addComponent(v1);
-  // c->addComponent(v2);
-
-  // CircuitProcessor *cp = new CircuitProcessor(c);
-  // cp->setInput(inputIndex);
-  // cp->setOutput(outputNode);
-
-  // return cp;
-  //
   int nodeCount = -1;
   int gnd = nodeCount++;
   int nodeIn = nodeCount++;
@@ -75,8 +31,6 @@ CircuitProcessor *PedalProcessors::FuzzProcessor() {
   VoltageSourceModel *v1 = new VoltageSourceModel(0, nodeIn, gnd);
   VoltageSourceModel *v2 = new VoltageSourceModel(9, nodePowerCap, gnd);
   NPNModel *t1 = new NPNModel(nodeB, nodeC, nodeE, "2N3904");
-
-  // Use LEDs for more pronounced clipping
   DiodeModel *led1 = new DiodeModel(nodeD, nodeLEDClip, "1N5817"); // LED characteristics
   DiodeModel *led2 = new DiodeModel(nodeLEDClip, nodeF, "BAT41");
   DiodeModel *led3 = new DiodeModel(nodeF, nodeD, "BAT41");

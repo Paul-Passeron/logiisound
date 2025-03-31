@@ -6,3 +6,4 @@ assets/*.mp3
 assets/*.wav
 .cache/*
 .gitignore
+__*

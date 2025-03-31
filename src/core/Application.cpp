@@ -46,10 +46,6 @@ void Application::init() {
   this->engine = new AudioEngine(processor);
 
   registerComponents();
-  for (const auto &comp : ComponentRegistry::instance().getRegistry()) {
-    ComponentModel *component = comp.second.createFunction();
-    componentDisplayed.emplace_back(pair(comp.first, component));
-  }
   editor = Editor();
 }
 
@@ -114,14 +110,13 @@ void Application::renderComponentView() {
   int i = 0;
   ImGui::Text("Components:");
   ImGui::BeginGroup();
-  for (auto comp_pair : componentDisplayed) {
-    ComponentModel *component = comp_pair.second;
+  for (auto comp : ComponentRegistry::instance().getRegistry()) {
     ImGui::PushID(i++);
     int w, h;
-    SDL_QueryTexture(component->getTexture(), nullptr, nullptr, &w, &h);
-    if (ImGui::ImageButton("##", (ImTextureID)component->getTexture(),
+    SDL_QueryTexture(comp.second.previewTexture, nullptr, nullptr, &w, &h);
+    if (ImGui::ImageButton("##", (ImTextureID)comp.second.previewTexture,
                            ImVec2(w, h))) {
-      editor.setComponentId(comp_pair.first);
+      editor.setComponentId(comp.first);
     }
     ImGui::PopID();
     if (i % 4 != 0) {
@@ -242,14 +237,10 @@ void Application::onPlayPressed() {
   }
 }
 
-void Application::setHistory(vector<Eigen::VectorXd> history) {
-  this->history = history;
-}
-
 Application *Application::instance = nullptr;
 
 Application *Application::getInstance() { return instance; }
 
-void Application::setNumState(int n) { numStates = n; }
-
 SDL_Window *Application::getWindow() { return window; }
+
+SDL_Renderer *Application::getRenderer() { return renderer; }
