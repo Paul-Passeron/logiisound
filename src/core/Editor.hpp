@@ -12,6 +12,7 @@ class Editor {
   ImVec2 windowSize;
   ImVec2 mousePos;
   bool focused = false;
+  double angle = 0.0;
 
   double getScaleFactor() const;
   void renderGrid();
@@ -20,6 +21,7 @@ class Editor {
   ImVec2 gridToScreen(const ImVec2 &gridPos, const ImVec2 &windowPos) const;
 
   string current_component_id = "";
+  void renderComponentPreview();
 
 public:
   void render();

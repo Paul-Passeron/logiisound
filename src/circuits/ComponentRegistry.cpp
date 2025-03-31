@@ -6,6 +6,7 @@
 #include "models/transistors/BJTs/NPNModel.hpp"
 #include <SDL_image.h>
 #include <iostream>
+#include <stdexcept>
 
 void registerComponents() {
   ComponentRegistry &instance = ComponentRegistry::instance();
@@ -28,10 +29,10 @@ ComponentRegistry &ComponentRegistry::instance() {
 
 void ComponentRegistry::registerComponent(
     const std::string &type, const std::string &name, const path texturePath,
-    std::function<ComponentModel *()> createFunction) {
+    std::function<ComponentModel *()> createFunction, int xSize, int ySize) {
   SDL_Renderer *renderer = Application::getInstance()->getRenderer();
   SDL_Texture *tex = IMG_LoadTexture(renderer, texturePath.c_str());
-  registry[type] = {name, tex, createFunction};
+  registry[type] = {name, tex, createFunction, xSize, ySize};
   std::cout << "[INFO]: Registered component " << name << " with id " << type
             << std::endl;
 }
@@ -47,8 +48,16 @@ ComponentModel *ComponentRegistry::createComponent(const std::string &type) {
 }
 
 void ComponentInfo::renderPreview(SDL_Renderer *renderer,
-                   const SDL_Rect &rect) {
+                                  const SDL_Rect &rect) {
   if (SDL_RenderCopy(renderer, previewTexture, nullptr, &rect)) {
     std::cerr << "ERROR: " << SDL_GetError() << std::endl;
   }
+}
+
+ComponentInfo ComponentRegistry::getComponent(std::string id) {
+  auto r = instance().getRegistry();
+  if (r.find(id) == r.end()) {
+    throw std::runtime_error("Unknown component " + id);
+  }
+  return r.at(id);
 }

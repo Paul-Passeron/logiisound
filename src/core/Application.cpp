@@ -112,8 +112,8 @@ void Application::renderComponentView() {
   ImGui::BeginGroup();
   for (auto comp : ComponentRegistry::instance().getRegistry()) {
     ImGui::PushID(i++);
-    int w, h;
-    SDL_QueryTexture(comp.second.previewTexture, nullptr, nullptr, &w, &h);
+    int w = 16.0 * comp.second.xSize;
+    int h = 16.0 * comp.second.ySize;
     if (ImGui::ImageButton("##", (ImTextureID)comp.second.previewTexture,
                            ImVec2(w, h))) {
       editor.setComponentId(comp.first);
