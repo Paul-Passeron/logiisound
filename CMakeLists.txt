@@ -56,6 +56,8 @@ set(SOURCES
   src/main.cpp
   src/core/Application.cpp src/core/Application.hpp
   src/core/Editor.cpp src/core/Editor.hpp
+  src/core/CableHelper.cpp src/core/CableHelper.hpp
+
   src/audio/processors/Processor.hpp src/audio/processors/Processor.cpp
   src/audio/processors/GainProcessor.cpp src/audio/processors/GainProcessor.hpp
   src/audio/processors/SwitchProcessor.cpp src/audio/processors/SwitchProcessor.hpp
@@ -68,6 +70,7 @@ set(SOURCES
   src/audio/processors/SquareGenerator.cpp src/audio/processors/SquareGenerator.hpp
   src/audio/processors/customs/PedalProcessors.cpp src/audio/processors/customs/PedalProcessors.hpp
   src/audio/engine/AudioEngine.cpp src/audio/engine/AudioEngine.hpp
+
   src/circuits/Circuit.cpp src/circuits/Circuit.hpp
 
   src/circuits/models/ComponentModel.cpp src/circuits/models/ComponentModel.hpp
