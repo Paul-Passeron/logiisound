@@ -231,6 +231,8 @@ void Editor::renderWires() {
     ImVec2 rA = gridToScreen(a);
     ImVec2 rB = gridToScreen(b);
     draw_list->AddLine(rA, rB, cableColor, 2.0f);
+    draw_list->AddCircleFilled(rA, 4.0f, cableColor);
+    draw_list->AddCircleFilled(rB, 4.0f, cableColor);
   }
 }
 

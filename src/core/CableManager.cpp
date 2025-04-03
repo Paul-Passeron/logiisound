@@ -1,8 +1,14 @@
 #include "CableManager.hpp"
+#include "CableHelper.hpp"
+#include <algorithm>
 #include <cmath>
+
+using std::pair;
+using std::vector;
 
 void CableManager::addCable(const ImVec2 &a, const ImVec2 &b) {
   cables.emplace_back(a, b);
+  cleanUpCables();
 }
 
 void CableManager::deleteCable(int index) {
@@ -19,7 +25,6 @@ int CableManager::findNearestCable(const ImVec2 &point,
                                    float *outDistance) const {
   int nearestIndex = -1;
   float minDistance = FLT_MAX;
-
   for (int i = 0; i < cables.size(); i++) {
     const auto &[a, b] = cables[i];
     float distance = calculateDistanceToSegment(point, a, b);
@@ -29,10 +34,9 @@ int CableManager::findNearestCable(const ImVec2 &point,
       nearestIndex = i;
     }
   }
-
-  if (outDistance)
+  if (outDistance) {
     *outDistance = minDistance;
-
+  }
   return nearestIndex;
 }
 
@@ -51,4 +55,73 @@ float CableManager::calculateDistanceToSegment(const ImVec2 &p, const ImVec2 &a,
   float dy = p.y - closest.y;
 
   return std::sqrt(dx * dx + dy * dy);
+}
+
+std::vector<std::pair<ImVec2, ImVec2>>
+getUniques(const std::vector<std::pair<ImVec2, ImVec2>> &cables) {
+  std::vector<std::pair<ImVec2, ImVec2>> uniqueCables;
+  for (const auto &cable : cables) {
+    bool found = false;
+    for (const auto &existing : uniqueCables) {
+      if ((cable.first.x == existing.first.x &&
+           cable.first.y == existing.first.y &&
+           cable.second.x == existing.second.x &&
+           cable.second.y == existing.second.y) ||
+          (cable.first.x == existing.second.x &&
+           cable.first.y == existing.second.y &&
+           cable.second.x == existing.first.x &&
+           cable.second.y == existing.first.y)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      uniqueCables.push_back(cable);
+  }
+  return uniqueCables;
+}
+
+void CableManager::cleanUpCables() {
+  cables = getUniques(cables);
+  std::vector<ImVec2> allEndpoints;
+  for (const auto &cable : cables) {
+    allEndpoints.push_back(cable.first);
+    allEndpoints.push_back(cable.second);
+  }
+  std::vector<std::pair<ImVec2, ImVec2>> newCables;
+  for (const auto &cable : cables) {
+    auto [p1, p2] = cable;
+    if ((p1.x > p2.x) || (p1.x == p2.x && p1.y > p2.y))
+      std::swap(p1, p2);
+    bool isV = (p1.x == p2.x);
+    std::vector<float> splitPoints = {isV ? p1.y : p1.x,
+                                      isV ? p2.y : p2.x};
+    for (const auto &endpoint : allEndpoints) {
+      if ((endpoint.x == p1.x && endpoint.y == p1.y) ||
+          (endpoint.x == p2.x && endpoint.y == p2.y))
+        continue;
+      if (isV) {
+        if (endpoint.x == p1.x && endpoint.y > p1.y && endpoint.y < p2.y) {
+          splitPoints.push_back(endpoint.y);
+        }
+      } else {
+        if (endpoint.y == p1.y && endpoint.x > p1.x && endpoint.x < p2.x) {
+          splitPoints.push_back(endpoint.x);
+        }
+      }
+    }
+    std::sort(splitPoints.begin(), splitPoints.end());
+    splitPoints.erase(std::unique(splitPoints.begin(), splitPoints.end()),
+                      splitPoints.end());
+    for (size_t i = 0; i < splitPoints.size() - 1; ++i) {
+      if (isV) {
+        newCables.push_back(
+            {{p1.x, splitPoints[i]}, {p1.x, splitPoints[i + 1]}});
+      } else {
+        newCables.push_back(
+            {{splitPoints[i], p1.y}, {splitPoints[i + 1], p1.y}});
+      }
+    }
+  }
+  cables = getUniques(newCables);
 }
