@@ -7,3 +7,4 @@ assets/*.wav
 .cache/*
 .gitignore
 __*
+*.xcf
