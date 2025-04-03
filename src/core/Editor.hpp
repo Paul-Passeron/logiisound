@@ -1,4 +1,5 @@
 #include "imgui_impl_sdl2.h"
+#include "CableManager.hpp"
 #include <imgui.h>
 #include <string>
 #include <vector>
@@ -35,7 +36,7 @@ class Editor {
   EditorState previousState = WireState;
   double angle = 0.0;
   ImVec2 lastPoint;
-  vector<pair<ImVec2, ImVec2>> cables;
+  CableManager manager;
   std::vector<PlacedComponent> placedComponents;
 
   double getScaleFactor() const;
@@ -51,9 +52,6 @@ class Editor {
   void endWire();
   void renderPreviewWire();
   void renderWires();
-  float calculateDistanceToSegment(const ImVec2& p, const ImVec2& a, const ImVec2& b) const;
-  int findNearestCable(const ImVec2& point, float* outDistance = nullptr) const;
-  void deleteCable(int index);
 
   // Components
   string current_component_id;

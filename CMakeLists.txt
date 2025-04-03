@@ -57,6 +57,7 @@ set(SOURCES
   src/core/Application.cpp src/core/Application.hpp
   src/core/Editor.cpp src/core/Editor.hpp
   src/core/CableHelper.cpp src/core/CableHelper.hpp
+  src/core/CableManager.cpp src/core/CableManager.hpp
 
   src/audio/processors/Processor.hpp src/audio/processors/Processor.cpp
   src/audio/processors/GainProcessor.cpp src/audio/processors/GainProcessor.hpp

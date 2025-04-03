@@ -100,9 +100,9 @@ void Editor::handleEvent(SDL_Event event) {
     if (state == WireState) {
       ImVec2 mouseGridPos = screenToGrid(mousePos);
       float distance;
-      int cableIndex = findNearestCable(mouseGridPos, &distance);
+      int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
       if (cableIndex >= 0 && distance <= 0.1f) {
-        deleteCable(cableIndex);
+        manager.deleteCable(cableIndex);
       }
     } else {
       previousState = state;
@@ -208,7 +208,7 @@ void Editor::endWire() {
   if (actualEnd == lastPoint) {
     return;
   }
-  cables.emplace_back(lastPoint, actualEnd);
+  manager.addCable(lastPoint, actualEnd);
   lastPoint = actualEnd;
 }
 
@@ -227,7 +227,7 @@ void Editor::renderPreviewWire() {
 
 void Editor::renderWires() {
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
-  for (auto [a, b] : cables) {
+  for (auto [a, b] : manager.getCables()) {
     ImVec2 rA = gridToScreen(a);
     ImVec2 rB = gridToScreen(b);
     draw_list->AddLine(rA, rB, cableColor, 2.0f);
@@ -254,48 +254,5 @@ void Editor::renderComponents() {
     ComponentInfo comp = ComponentRegistry::getComponent(c.type);
     ImageRotated((ImTextureID)comp.previewTexture, gridToScreen(c.position),
                  ImVec2(comp.xSize, comp.ySize) * scaleFactor, c.angle);
-  }
-}
-
-float Editor::calculateDistanceToSegment(const ImVec2 &p, const ImVec2 &a,
-                                         const ImVec2 &b) const {
-  ImVec2 ab = ImVec2(b.x - a.x, b.y - a.y);
-  ImVec2 ap = ImVec2(p.x - a.x, p.y - a.y);
-
-  float ab_squared = ab.x * ab.x + ab.y * ab.y;
-  float ap_dot_ab = ap.x * ab.x + ap.y * ab.y;
-
-  float t = std::max(0.0f, std::min(1.0f, ap_dot_ab / ab_squared));
-
-  ImVec2 closest = ImVec2(a.x + t * ab.x, a.y + t * ab.y);
-  float dx = p.x - closest.x;
-  float dy = p.y - closest.y;
-
-  return std::sqrt(dx * dx + dy * dy);
-}
-
-int Editor::findNearestCable(const ImVec2 &point, float *outDistance) const {
-  int nearestIndex = -1;
-  float minDistance = FLT_MAX;
-
-  for (int i = 0; i < cables.size(); i++) {
-    const auto &[a, b] = cables[i];
-    float distance = calculateDistanceToSegment(point, a, b);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      nearestIndex = i;
-    }
-  }
-
-  if (outDistance)
-    *outDistance = minDistance;
-
-  return nearestIndex;
-}
-
-void Editor::deleteCable(int index) {
-  if (index >= 0 && index < cables.size()) {
-    cables.erase(cables.begin() + index);
   }
 }
