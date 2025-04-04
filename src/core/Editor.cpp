@@ -1,13 +1,13 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "../circuits/ComponentRegistry.hpp"
 #include "Editor.hpp"
-#include <imgui.h>
-#include <imgui_internal.h>
+#include "../circuits/ComponentRegistry.hpp"
+#include "CableHelper.hpp"
 #include <SDL_events.h>
 #include <SDL_render.h>
 #include <cmath>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <iostream>
-#include "CableHelper.hpp"
 // TODO:
 // - maybe outsource cable management to a distinct class ?
 // - Be able to interact with placed components
@@ -71,19 +71,24 @@ void Editor::render() {
   }
   renderWires();
 
-  float distance;
-  int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
-  if (cableIndex >= 0 && distance <= hoverDistance) {
-    renderHoveredWire(cableIndex);
-  }
-
-  renderComponents();
+  int compIndex = getHoveredComponentIndex();
+  renderHoveredComp(compIndex);
 
   if (state == ComponentState || state == RotateState) {
     renderComponentPreview();
   } else if (state == WireDrawing) {
     renderPreviewWire();
   }
+
+  if (compIndex < 0) {
+    float distance;
+    int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
+    if (cableIndex >= 0 && distance <= hoverDistance) {
+      renderHoveredWire(cableIndex);
+    }
+  }
+
+  renderComponents();
 
   ImGui::End();
 }
@@ -179,7 +184,8 @@ ImVec2 add(const ImVec2 &a, const ImVec2 &b) {
   return ImVec2(a.x + b.x, a.y + b.y);
 }
 
-void ImageRotated(ImTextureID tex_id, ImVec2 center, ImVec2 size, float angle) {
+void ImageRotated(ImTextureID tex_id, ImVec2 center, ImVec2 size, float angle,
+                  ImU32 color = IM_COL32_WHITE) {
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
   float cos_a = cosf(angle * M_PI / 180.0);
@@ -193,7 +199,7 @@ void ImageRotated(ImTextureID tex_id, ImVec2 center, ImVec2 size, float angle) {
                    ImVec2(0.0f, 1.0f)};
 
   draw_list->AddImageQuad(tex_id, pos[0], pos[1], pos[2], pos[3], uvs[0],
-                          uvs[1], uvs[2], uvs[3], IM_COL32_WHITE);
+                          uvs[1], uvs[2], uvs[3], color);
 }
 
 void Editor::renderComponentPreview() {
@@ -204,7 +210,8 @@ void Editor::renderComponentPreview() {
   ImVec2 snappedScreenPos = gridToScreen(snappedGridPos);
   ComponentInfo comp = ComponentRegistry::getComponent(current_component_id);
   ImageRotated((ImTextureID)comp.previewTexture, snappedScreenPos,
-               ImVec2(comp.xSize, comp.ySize) * scaleFactor, angle);
+               ImVec2(comp.xSize, comp.ySize) * scaleFactor, angle,
+               ImColor(255, 255, 255, 150));
 }
 
 void Editor::initWire() {
@@ -275,14 +282,17 @@ const ImU32 Editor::wireHoverColor = IM_COL32(120, 100, 175, 255);
 
 void Editor::placeCurrentComponent() {
   // TODO: check for conflicts
-  PlacedComponent comp;
-  comp.angle = angle;
-  comp.id = componentCount++;
-  ImVec2 mouseGridPos = screenToGrid(mousePos);
-  comp.position = ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
-  comp.type = current_component_id;
-  placedComponents.emplace_back(comp);
-  updateCompNodes();
+  int compIndex = getHoveredComponentIndex();
+  if (compIndex < 0) {
+    PlacedComponent comp;
+    comp.angle = angle;
+    comp.id = componentCount++;
+    ImVec2 mouseGridPos = screenToGrid(mousePos);
+    comp.position = ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
+    comp.type = current_component_id;
+    placedComponents.emplace_back(comp);
+    updateCompNodes();
+  }
 }
 
 void Editor::updateCompNodes() {
@@ -319,20 +329,6 @@ void Editor::renderComponents() {
     ComponentInfo comp = ComponentRegistry::getComponent(c.type);
     ImageRotated((ImTextureID)comp.previewTexture, gridToScreen(c.position),
                  ImVec2(comp.xSize, comp.ySize) * scaleFactor, c.angle);
-    for (const auto &p : comp.pins) {
-      ImVec2 actualGridPos = ImRotate(p, cosf(c.angle * M_PI / 180.0),
-                                      sinf(c.angle * M_PI / 180.0));
-      actualGridPos.x = roundf(actualGridPos.x);
-      actualGridPos.y = roundf(actualGridPos.y);
-      actualGridPos += c.position;
-      actualGridPos.x = roundf(actualGridPos.x);
-      actualGridPos.y = roundf(actualGridPos.y);
-      // show pins
-      ImVec2 pinScreenPos = gridToScreen(actualGridPos);
-      ImDrawList *l = ImGui::GetWindowDrawList();
-      // l->AddCircleFilled(pinScreenPos, 0.2 * scaleFactor, ImColor(255, 0,
-      // 0));
-    }
   }
 }
 
@@ -344,5 +340,48 @@ void Editor::renderHoveredWire(int index) {
   ImVec2 rA = gridToScreen(a);
   ImVec2 rB = gridToScreen(b);
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
-  draw_list->AddLine(rA, rB, wireHoverColor, 4.0f);
+  draw_list->AddLine(rA, rB, wireHoverColor, 2.0f);
+}
+
+void Editor::renderHoveredComp(int index) {
+  if (index < 0) {
+    return;
+  }
+  PlacedComponent c = placedComponents[index];
+  ComponentInfo comp = ComponentRegistry::getComponent(c.type);
+  float sina = sinf(c.angle * M_PI / 180);
+  float cosa = cosf(c.angle * M_PI / 180);
+  ImVec2 va =
+      ImRotate(c.position - ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
+  ImVec2 vc =
+      ImRotate(c.position + ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
+  ImVec2 vb =
+      ImRotate(c.position - ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
+  ImVec2 vd =
+      ImRotate(c.position + ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
+  va = gridToScreen(va);
+  vb = gridToScreen(vb);
+  vc = gridToScreen(vc);
+  vd = gridToScreen(vd);
+  ImDrawList *l = ImGui::GetWindowDrawList();
+  l->AddLine(va, vb, ImColor(255, 0, 0), 3.0);
+  l->AddLine(vb, vc, ImColor(255, 0, 0), 3.0);
+  l->AddLine(vc, vd, ImColor(255, 0, 0), 3.0);
+  l->AddLine(vd, va, ImColor(255, 0, 0), 3.0);
+}
+
+int Editor::getHoveredComponentIndex() {
+  ImVec2 mouseGridPos = screenToGrid(mousePos);
+  int index = -1;
+  for (const auto &c : placedComponents) {
+    index++;
+    const ComponentInfo &comp = ComponentRegistry::getComponent(c.type);
+    ImVec2 b = c.position - ImVec2(comp.xSize, comp.ySize) / 2;
+    ImVec2 a = c.position + ImVec2(comp.xSize, comp.ySize) / 2;
+    if (mouseGridPos.x <= a.x && mouseGridPos.y <= a.y &&
+        mouseGridPos.x >= b.x && mouseGridPos.y >= b.y) {
+      return index;
+    }
+  }
+  return -1;
 }

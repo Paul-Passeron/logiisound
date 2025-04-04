@@ -89,7 +89,7 @@ getUniques(const std::vector<std::pair<ImVec2, ImVec2>> &cables) {
 
 void CableManager::cleanUpCables() {
   cables = getUniques(cables);
-  std::vector<ImVec2> allEndpoints;
+  vector<ImVec2> allEndpoints;
   for (const auto &cable : cables) {
     allEndpoints.push_back(cable.first);
     allEndpoints.push_back(cable.second);
@@ -146,7 +146,6 @@ void CableManager::updateJunctionNodes() {
     nodeCount[b]++;
   }
   for (const auto &a : externalNodes) {
-    std::cout << "External node " << &a << std::endl;
     nodeCount[a]++;
   }
   for (const auto &[node, count] : nodeCount) {
@@ -162,4 +161,5 @@ void CableManager::updateExternalNodes(const vector<ImVec2> &ext) {
   externalNodes = ext;
   updateJunctionNodes();
   cleanUpCables();
+  updateJunctionNodes();
 }

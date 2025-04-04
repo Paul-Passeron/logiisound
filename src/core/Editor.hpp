@@ -65,8 +65,8 @@ class Editor {
   void placeCurrentComponent();
   void renderComponents();
   void updateCompNodes();
-
-
+  void renderHoveredComp(int index);
+  int getHoveredComponentIndex();
 public:
   void render();
   void handleEvent(SDL_Event event);
