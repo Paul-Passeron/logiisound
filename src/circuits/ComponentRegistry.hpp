@@ -1,8 +1,12 @@
+#pragma once
+
 #include "models/ComponentModel.hpp"
 #include <filesystem>
 #include <functional>
+#include <imgui.h>
 #include <string>
 
+using std::vector;
 using std::filesystem::path;
 
 struct ComponentInfo {
@@ -12,6 +16,7 @@ struct ComponentInfo {
   void renderPreview(SDL_Renderer *renderer, const SDL_Rect &rect);
   int xSize = 2.0;
   int ySize = 2.0;
+  vector<ImVec2> pins;
 };
 
 class ComponentRegistry {
@@ -20,7 +25,8 @@ public:
   void registerComponent(const std::string &type, const std::string &name,
                          const path texturePath,
                          std::function<ComponentModel *()> createFunction,
-                         int xSize = 2.0, int ySize = 2.0);
+                         int xSize = 2.0, int ySize = 2.0,
+                         vector<ImVec2> pins = vector<ImVec2>(0));
 
   const std::unordered_map<std::string, ComponentInfo> &getRegistry() const;
   static ComponentInfo getComponent(std::string id);

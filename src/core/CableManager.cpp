@@ -2,18 +2,24 @@
 #include "CableHelper.hpp"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <map>
 
+using std::map;
 using std::pair;
 using std::vector;
 
 void CableManager::addCable(const ImVec2 &a, const ImVec2 &b) {
   cables.emplace_back(a, b);
   cleanUpCables();
+  updateJunctionNodes();
 }
 
 void CableManager::deleteCable(int index) {
   if (index >= 0 && index < cables.size()) {
     cables.erase(cables.begin() + index);
+    cleanUpCables();
+    updateJunctionNodes();
   }
 }
 
@@ -88,14 +94,16 @@ void CableManager::cleanUpCables() {
     allEndpoints.push_back(cable.first);
     allEndpoints.push_back(cable.second);
   }
+  for(const auto &n:  externalNodes) {
+    allEndpoints.push_back(n);
+  }
   std::vector<std::pair<ImVec2, ImVec2>> newCables;
   for (const auto &cable : cables) {
     auto [p1, p2] = cable;
     if ((p1.x > p2.x) || (p1.x == p2.x && p1.y > p2.y))
       std::swap(p1, p2);
     bool isV = (p1.x == p2.x);
-    std::vector<float> splitPoints = {isV ? p1.y : p1.x,
-                                      isV ? p2.y : p2.x};
+    std::vector<float> splitPoints = {isV ? p1.y : p1.x, isV ? p2.y : p2.x};
     for (const auto &endpoint : allEndpoints) {
       if ((endpoint.x == p1.x && endpoint.y == p1.y) ||
           (endpoint.x == p2.x && endpoint.y == p2.y))
@@ -124,4 +132,34 @@ void CableManager::cleanUpCables() {
     }
   }
   cables = getUniques(newCables);
+}
+
+const vector<ImVec2> &CableManager::getJunctionNodes() const {
+  return junctionNodes;
+}
+
+void CableManager::updateJunctionNodes() {
+  junctionNodes.clear();
+  map<ImVec2, int, PointCompare> nodeCount;
+  for (const auto [a, b] : cables) {
+    nodeCount[a]++;
+    nodeCount[b]++;
+  }
+  for (const auto &a : externalNodes) {
+    std::cout << "External node " << &a << std::endl;
+    nodeCount[a]++;
+  }
+  for (const auto &[node, count] : nodeCount) {
+    if (count > 2) {
+      junctionNodes.push_back(node);
+    }
+  }
+}
+
+void CableManager::updateExternalNodes(const vector<ImVec2> &ext) {
+  std::cout << "Update nodes" << std::endl;
+  externalNodes.clear();
+  externalNodes = ext;
+  updateJunctionNodes();
+  cleanUpCables();
 }

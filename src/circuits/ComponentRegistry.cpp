@@ -1,5 +1,6 @@
 #include "ComponentRegistry.hpp"
 #include "../core/Application.hpp"
+#include "imgui.h"
 #include "models/CapacitorModel.hpp"
 #include "models/DiodeModel.hpp"
 #include "models/ResistorModel.hpp"
@@ -12,14 +13,18 @@ void registerComponents() {
   ComponentRegistry &instance = ComponentRegistry::instance();
   path prefix = std::filesystem::current_path().parent_path() / "assets/icons";
   instance.registerComponent("res", "Resistor", prefix / "resistor.png",
-                             []() { return new ResistorModel(1, -1, -1); });
+                             []() { return new ResistorModel(1, -1, -1); }, 2,
+                             2, {ImVec2(-1, 0), ImVec2(1, 0)});
   instance.registerComponent("cap", "Capacitor", prefix / "capacitor.png",
-                             []() { return new CapacitorModel(1, -1, -1); });
+                             []() { return new CapacitorModel(1, -1, -1); }, 2,
+                             2, {ImVec2(-1, 0), ImVec2(1, 0)});
   instance.registerComponent("diode", "Diode", prefix / "diode.png",
-                             []() { return new DiodeModel(-1, -1, "1N4148"); });
-  instance.registerComponent("npn", "NPN Transistor", prefix / "npn.png", []() {
-    return new NPNModel(-1, -1, -1, "2N3904");
-  });
+                             []() { return new DiodeModel(-1, -1, "1N4148"); },
+                             2, 2, {ImVec2(-1, 0), ImVec2(1, 0)});
+  instance.registerComponent(
+      "npn", "NPN Transistor", prefix / "npn.png",
+      []() { return new NPNModel(-1, -1, -1, "2N3904"); }, 2, 2,
+      {ImVec2(-1, 0), ImVec2(0, 1), ImVec2(0, -1)});
 }
 
 ComponentRegistry &ComponentRegistry::instance() {
@@ -29,10 +34,12 @@ ComponentRegistry &ComponentRegistry::instance() {
 
 void ComponentRegistry::registerComponent(
     const std::string &type, const std::string &name, const path texturePath,
-    std::function<ComponentModel *()> createFunction, int xSize, int ySize) {
+    std::function<ComponentModel *()> createFunction, int xSize, int ySize,
+    vector<ImVec2> pins) {
   SDL_Renderer *renderer = Application::getInstance()->getRenderer();
   SDL_Texture *tex = IMG_LoadTexture(renderer, texturePath.c_str());
-  registry[type] = {name, tex, createFunction, xSize, ySize};
+  registry[type] = {name, tex, createFunction, xSize, ySize, pins};
+
   std::cout << "[INFO]: Registered component " << name << " with id " << type
             << std::endl;
 }

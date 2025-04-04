@@ -1,16 +1,33 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Editor.hpp"
 #include "../circuits/ComponentRegistry.hpp"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "Editor.hpp"
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <SDL_events.h>
 #include <SDL_render.h>
 #include <cmath>
 #include <iostream>
-
+#include "CableHelper.hpp"
 // TODO:
 // - maybe outsource cable management to a distinct class ?
 // - Be able to interact with placed components
+
+const float Editor::hoverDistance = 0.3f;
+
+const char *getStateString(EditorState s) {
+  switch (s) {
+  case WireState:
+    return "WireState";
+  case WireDrawing:
+    return "WireDrawing";
+  case ComponentState:
+    return "ComponentState";
+  case RotateState:
+    return "RotateState";
+  default:
+    return "Unknown State (Error)";
+  }
+}
 
 double Editor::getScaleFactor() const { return 50.0 * zoom; }
 
@@ -35,9 +52,7 @@ void Editor::renderGrid() {
 
 void Editor::render() {
   ImGui::Begin("Editor", nullptr);
-  ImGui::Text("Current State: %s", state == WireState     ? "WireState"
-                                   : state == WireDrawing ? "WireDrawing"
-                                                          : "ComponentState");
+  ImGui::Text("Current State: %s", getStateString(state));
   windowPos = ImGui::GetWindowPos();
   windowSize = ImGui::GetWindowSize();
   mousePos = ImGui::GetMousePos();
@@ -55,6 +70,13 @@ void Editor::render() {
     drawList->AddCircleFilled(snappedScreenPos, 3.0f, IM_COL32(255, 0, 0, 255));
   }
   renderWires();
+
+  float distance;
+  int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
+  if (cableIndex >= 0 && distance <= hoverDistance) {
+    renderHoveredWire(cableIndex);
+  }
+
   renderComponents();
 
   if (state == ComponentState || state == RotateState) {
@@ -66,9 +88,20 @@ void Editor::render() {
   ImGui::End();
 }
 
+void Editor::tryDeleteWire() {
+  ImVec2 mouseGridPos = screenToGrid(mousePos);
+  float distance;
+  int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
+  if (cableIndex >= 0 && distance <= hoverDistance) {
+    manager.deleteCable(cableIndex);
+  }
+}
+
 void Editor::handleEvent(SDL_Event event) {
   if (focused) {
     if (event.type == SDL_MOUSEWHEEL) {
+      // TODO: figure out how to zoom to cursor, for the moment it
+      // is stuck to the top left corner of the grid.
       if (event.wheel.y > 0)
         zoom *= 1.1;
       else if (event.wheel.y < 0)
@@ -79,6 +112,7 @@ void Editor::handleEvent(SDL_Event event) {
       offset.x += event.motion.xrel;
       offset.y += event.motion.yrel;
     }
+
     if (event.type == SDL_MOUSEBUTTONDOWN &&
         (event.button.button == SDL_BUTTON_LEFT)) {
       if (state == WireState) {
@@ -98,12 +132,7 @@ void Editor::handleEvent(SDL_Event event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       (event.button.button == SDL_BUTTON_RIGHT)) {
     if (state == WireState) {
-      ImVec2 mouseGridPos = screenToGrid(mousePos);
-      float distance;
-      int cableIndex = manager.findNearestCable(mouseGridPos, &distance);
-      if (cableIndex >= 0 && distance <= 0.1f) {
-        manager.deleteCable(cableIndex);
-      }
+      tryDeleteWire();
     } else {
       previousState = state;
       state = WireState;
@@ -117,8 +146,10 @@ void Editor::handleEvent(SDL_Event event) {
       if (state == RotateState) {
         state = previousState;
       } else {
-        previousState = state;
-        state = RotateState;
+        if (state == ComponentState) {
+          previousState = state;
+          state = RotateState;
+        }
       }
     }
   }
@@ -222,7 +253,7 @@ void Editor::renderPreviewWire() {
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
   ImVec2 rA = gridToScreen(lastPoint);
   ImVec2 rB = gridToScreen(actualEnd);
-  draw_list->AddLine(rA, rB, previewColor, 2.0f);
+  draw_list->AddLine(rA, rB, wirePreviewColor, 2.0f);
 }
 
 void Editor::renderWires() {
@@ -230,14 +261,17 @@ void Editor::renderWires() {
   for (auto [a, b] : manager.getCables()) {
     ImVec2 rA = gridToScreen(a);
     ImVec2 rB = gridToScreen(b);
-    draw_list->AddLine(rA, rB, cableColor, 2.0f);
-    draw_list->AddCircleFilled(rA, 4.0f, cableColor);
-    draw_list->AddCircleFilled(rB, 4.0f, cableColor);
+    draw_list->AddLine(rA, rB, wireColor, 2.0f);
+  }
+  for (auto a : manager.getJunctionNodes()) {
+    ImVec2 rA = gridToScreen(a);
+    draw_list->AddCircleFilled(rA, 4.0f, wireColor);
   }
 }
 
-ImU32 Editor::cableColor = IM_COL32(0, 0, 0, 255);
-ImU32 Editor::previewColor = IM_COL32(25, 200, 25, 255);
+const ImU32 Editor::wireColor = IM_COL32(0, 0, 0, 255);
+const ImU32 Editor::wirePreviewColor = IM_COL32(25, 200, 25, 255);
+const ImU32 Editor::wireHoverColor = IM_COL32(120, 100, 175, 255);
 
 void Editor::placeCurrentComponent() {
   // TODO: check for conflicts
@@ -248,6 +282,35 @@ void Editor::placeCurrentComponent() {
   comp.position = ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
   comp.type = current_component_id;
   placedComponents.emplace_back(comp);
+  updateCompNodes();
+}
+
+void Editor::updateCompNodes() {
+  std::vector<ImVec2> nodes;
+  double scaleFactor = getScaleFactor();
+  PointCompare compare;
+  for (auto c : placedComponents) {
+    ComponentInfo comp = ComponentRegistry::getComponent(c.type);
+    for (const auto &p : comp.pins) {
+      std::cout << c.angle << std::endl;
+      ImVec2 actualGridPos = ImRotate(p, cosf(c.angle * M_PI / 180.0),
+                                      sinf(c.angle * M_PI / 180.0));
+      actualGridPos += c.position;
+      actualGridPos.x = roundf(actualGridPos.x);
+      actualGridPos.y = roundf(actualGridPos.y);
+      bool isIn = false;
+      for (const auto &n : nodes) {
+        if (compare(n, actualGridPos) < 10e-2) {
+          isIn = true;
+          break;
+        }
+      }
+      if (!isIn) {
+        nodes.emplace_back(actualGridPos);
+      }
+    }
+  }
+  manager.updateExternalNodes(nodes);
 }
 
 void Editor::renderComponents() {
@@ -256,5 +319,30 @@ void Editor::renderComponents() {
     ComponentInfo comp = ComponentRegistry::getComponent(c.type);
     ImageRotated((ImTextureID)comp.previewTexture, gridToScreen(c.position),
                  ImVec2(comp.xSize, comp.ySize) * scaleFactor, c.angle);
+    for (const auto &p : comp.pins) {
+      ImVec2 actualGridPos = ImRotate(p, cosf(c.angle * M_PI / 180.0),
+                                      sinf(c.angle * M_PI / 180.0));
+      actualGridPos.x = roundf(actualGridPos.x);
+      actualGridPos.y = roundf(actualGridPos.y);
+      actualGridPos += c.position;
+      actualGridPos.x = roundf(actualGridPos.x);
+      actualGridPos.y = roundf(actualGridPos.y);
+      // show pins
+      ImVec2 pinScreenPos = gridToScreen(actualGridPos);
+      ImDrawList *l = ImGui::GetWindowDrawList();
+      // l->AddCircleFilled(pinScreenPos, 0.2 * scaleFactor, ImColor(255, 0,
+      // 0));
+    }
   }
+}
+
+void Editor::renderHoveredWire(int index) {
+  if (index < 0) {
+    return;
+  }
+  auto [a, b] = manager.getCables()[index];
+  ImVec2 rA = gridToScreen(a);
+  ImVec2 rB = gridToScreen(b);
+  ImDrawList *draw_list = ImGui::GetWindowDrawList();
+  draw_list->AddLine(rA, rB, wireHoverColor, 4.0f);
 }

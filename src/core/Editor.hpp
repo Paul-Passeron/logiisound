@@ -1,3 +1,4 @@
+#pragma once
 #include "imgui_impl_sdl2.h"
 #include "CableManager.hpp"
 #include <imgui.h>
@@ -46,12 +47,16 @@ class Editor {
   ImVec2 gridToScreen(const ImVec2 &gridPos) const;
 
   // Cables
-  static ImU32 cableColor;
-  static ImU32 previewColor;
+  const static ImU32 wireColor;
+  const static ImU32 wirePreviewColor;
+  const static ImU32 wireHoverColor;
+  const static float hoverDistance;
   void initWire();
   void endWire();
   void renderPreviewWire();
+  void renderHoveredWire(int index);
   void renderWires();
+  void tryDeleteWire();
 
   // Components
   string current_component_id;
@@ -59,6 +64,8 @@ class Editor {
   void renderComponentPreview();
   void placeCurrentComponent();
   void renderComponents();
+  void updateCompNodes();
+
 
 public:
   void render();
