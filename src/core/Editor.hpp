@@ -33,6 +33,9 @@ class Editor {
   ImVec2 mousePos;
   bool focused = false;
 
+  bool openCompPopup = false;
+  int rightClickedComp = -1;
+
   EditorState state = WireState;
   EditorState previousState = WireState;
   double angle = 0.0;
@@ -67,6 +70,9 @@ class Editor {
   void updateCompNodes();
   void renderHoveredComp(int index);
   int getHoveredComponentIndex();
+  void renderCompPopup();
+
+
 public:
   void render();
   void handleEvent(SDL_Event event);

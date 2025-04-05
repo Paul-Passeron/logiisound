@@ -51,6 +51,7 @@ void Editor::renderGrid() {
 }
 
 void Editor::render() {
+
   ImGui::Begin("Editor", nullptr);
   ImGui::Text("Current State: %s", getStateString(state));
   windowPos = ImGui::GetWindowPos();
@@ -89,6 +90,14 @@ void Editor::render() {
   }
 
   renderComponents();
+  if (openCompPopup) {
+    ImGui::OpenPopup("comp_rc", ImGuiWindowFlags_NoMove);
+    openCompPopup = false;
+  }
+  if (ImGui::BeginPopup("comp_rc")) {
+    renderCompPopup();
+    ImGui::EndPopup();
+  }
 
   ImGui::End();
 }
@@ -136,11 +145,19 @@ void Editor::handleEvent(SDL_Event event) {
   }
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       (event.button.button == SDL_BUTTON_RIGHT)) {
-    if (state == WireState) {
-      tryDeleteWire();
+    int index = getHoveredComponentIndex();
+    if (index < 0) {
+
+      if (state == WireState) {
+        tryDeleteWire();
+      } else {
+        previousState = state;
+        state = WireState;
+      }
     } else {
-      previousState = state;
-      state = WireState;
+      // open a popup ?
+      openCompPopup = true;
+      rightClickedComp = index;
     }
   }
   if (event.type == SDL_KEYDOWN) {
@@ -384,4 +401,12 @@ int Editor::getHoveredComponentIndex() {
     }
   }
   return -1;
+}
+
+void Editor::renderCompPopup() {
+  if(ImGui::Button("Delete")){
+    placedComponents.erase(placedComponents.begin() + rightClickedComp);
+    updateCompNodes();
+    ImGui::CloseCurrentPopup();
+  }
 }
