@@ -42,7 +42,7 @@ void registerComponents() {
       []() { return new NPNModel(-1, -1, -1, "2N3904"); }, 2, 2,
       {ImVec2(-1, 0), ImVec2(0, 1), ImVec2(0, -1)},
       {{"model",
-       {{"value", "2N3904"}, {"values"}, {"2N2222", "BC337", "2N3904"}}}});
+       {{"value", "2N3904"}, {"values", {"2N2222", "BC337", "2N3904"}}}}});
 
   instance.registerComponent("gnd", "Ground connection", prefix / "ground.png",
                              []() { return nullptr; }, 2, 2, {ImVec2(0, -1)});

@@ -139,16 +139,42 @@ void Editor::render() {
         }
         float new_value = el.value()["value"];
         new_value *= mult;
-        ImGui::SliderFloat("##floatSlider", &new_value,
-                           mult * (float)el.value()["min"],
+        ImGui::PushID((intptr_t)&el);
+        ImGui::SliderFloat("##", &new_value, mult * (float)el.value()["min"],
                            mult * (float)el.value()["max"], fmt.c_str(),
                            ImGuiSliderFlags_Logarithmic);
+        ImGui::PopID();
         el.value()["value"] = new_value / mult;
+      } else if (el.value()["value"].is_string() &&
+                 el.value()["values"].is_array() &&
+                 !el.value()["values"].empty()) {
+        auto &vals = el.value()["values"];
+        std::string currentValue = el.value()["value"].get<std::string>();
+        int index = 0;
+        for (int i = 0; i < vals.size(); i++) {
+          if (vals[i].get<std::string>() == currentValue) {
+            index = i;
+            break;
+          }
+        }
+        std::vector<std::string> items;
+        for (auto &v : vals) {
+          items.push_back(v.get<std::string>());
+        }
+        std::vector<const char *> itemsPtr;
+        for (const auto &item : items) {
+          itemsPtr.push_back(item.c_str());
+        }
+        ImGui::PushID((intptr_t)&el);
+        if (ImGui::Combo("Select Value", &index, itemsPtr.data(),
+                         itemsPtr.size())) {
+          el.value()["value"] = vals[index];
+        }
+        ImGui::PopID();
       }
     }
     ImGui::EndPopup();
   }
-
   ImGui::End();
 }
 
