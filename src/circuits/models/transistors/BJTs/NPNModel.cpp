@@ -256,3 +256,7 @@ void NPNModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
       g_mu * Vbc_clamped; // Fixed a probable bug here (was Ibc * g_mu * Vbc)
   ICE_eq = I_t - g_m * Vbe_clamped + g_0 * Vce;
 }
+
+void NPNModel::fromJson(json data) {
+  // TODO
+}

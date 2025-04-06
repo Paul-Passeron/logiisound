@@ -27,3 +27,7 @@ void ResistorModel::stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs,
     matrix(node2, node2) += G_;
   }
 }
+
+void ResistorModel::fromJson(json data) {
+  // TODO
+}

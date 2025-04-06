@@ -1,13 +1,16 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "Editor.hpp"
 #include "../circuits/ComponentRegistry.hpp"
 #include "CableHelper.hpp"
+#include "CircuitSerializer.hpp"
 #include <SDL_events.h>
 #include <SDL_render.h>
 #include <cmath>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <iostream>
+
 // TODO:
 // - maybe outsource cable management to a distinct class ?
 // - Be able to interact with placed components
@@ -90,12 +93,59 @@ void Editor::render() {
   }
 
   renderComponents();
+  renderDebugPins();
+
   if (openCompPopup) {
     ImGui::OpenPopup("comp_rc", ImGuiWindowFlags_NoMove);
     openCompPopup = false;
   }
   if (ImGui::BeginPopup("comp_rc")) {
     renderCompPopup();
+    ImGui::EndPopup();
+  }
+
+  if (openEditComp) {
+    ImGui::OpenPopup("editComp");
+    openEditComp = false;
+    const PlacedComponent &c = placedComponents[rightClickedComp];
+    json data = c.data;
+    std::cout << data.dump() << std::endl;
+  }
+
+  if (ImGui::BeginPopup("editComp")) {
+    PlacedComponent &c = placedComponents[rightClickedComp];
+    json &data = c.data;
+    ImGui::LabelText("##editCompLabel", "Edit Component");
+    ImGui::Separator();
+    for (auto &el : data.items()) {
+      std::string k = el.key();
+      if (k.length() > 0) {
+        k[0] = toupper(k[0]);
+      }
+      ImGui::Text("%s: ", k.c_str());
+      ImGui::SameLine();
+
+      if (el.value()["value"].is_number_float()) {
+        float mult = 1.0f;
+        // TODO:
+        // - Format specified directly in JSON ?
+        // - Dynamic prefix
+        string fmt = "%.1f ";
+        if (k == "R") {
+          fmt += " Ohms";
+        } else if (k == "C") {
+          fmt += "pF";
+          mult = 1e12;
+        }
+        float new_value = el.value()["value"];
+        new_value *= mult;
+        ImGui::SliderFloat("##floatSlider", &new_value,
+                           mult * (float)el.value()["min"],
+                           mult * (float)el.value()["max"], fmt.c_str(),
+                           ImGuiSliderFlags_Logarithmic);
+        el.value()["value"] = new_value / mult;
+      }
+    }
     ImGui::EndPopup();
   }
 
@@ -113,13 +163,31 @@ void Editor::tryDeleteWire() {
 
 void Editor::handleEvent(SDL_Event event) {
   if (focused) {
+    if (event.type == SDL_KEYDOWN) {
+      if (event.key.keysym.sym == SDLK_w) {
+        previousState = state;
+        state = WireState;
+      } else if (event.key.keysym.sym == SDLK_r) {
+        if (state == RotateState) {
+          state = previousState;
+        } else {
+          if (state == ComponentState) {
+            previousState = state;
+            state = RotateState;
+          }
+        }
+      }
+    }
     if (event.type == SDL_MOUSEWHEEL) {
-      // TODO: figure out how to zoom to cursor, for the moment it
-      // is stuck to the top left corner of the grid.
+      ImVec2 old = screenToGrid(mousePos);
+      double oldZoom = zoom;
       if (event.wheel.y > 0)
         zoom *= 1.1;
       else if (event.wheel.y < 0)
         zoom /= 1.1;
+      ImVec2 newer = screenToGrid(mousePos);
+      offset.x += (newer.x - old.x) * getScaleFactor();
+      offset.y += (newer.y - old.y) * getScaleFactor();
     }
     if (event.type == SDL_MOUSEMOTION &&
         (event.motion.state & SDL_BUTTON_MMASK)) {
@@ -155,24 +223,8 @@ void Editor::handleEvent(SDL_Event event) {
         state = WireState;
       }
     } else {
-      // open a popup ?
       openCompPopup = true;
       rightClickedComp = index;
-    }
-  }
-  if (event.type == SDL_KEYDOWN) {
-    if (event.key.keysym.sym == SDLK_w) {
-      previousState = state;
-      state = WireState;
-    } else if (event.key.keysym.sym == SDLK_r) {
-      if (state == RotateState) {
-        state = previousState;
-      } else {
-        if (state == ComponentState) {
-          previousState = state;
-          state = RotateState;
-        }
-      }
     }
   }
 }
@@ -307,8 +359,8 @@ void Editor::placeCurrentComponent() {
     ImVec2 mouseGridPos = screenToGrid(mousePos);
     comp.position = ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
     comp.type = current_component_id;
-    placedComponents.emplace_back(comp);
-    updateCompNodes();
+    comp.data = ComponentRegistry::getComponent(comp.type).data;
+    addComponent(comp);
   }
 }
 
@@ -319,22 +371,12 @@ void Editor::updateCompNodes() {
   for (auto c : placedComponents) {
     ComponentInfo comp = ComponentRegistry::getComponent(c.type);
     for (const auto &p : comp.pins) {
-      std::cout << c.angle << std::endl;
       ImVec2 actualGridPos = ImRotate(p, cosf(c.angle * M_PI / 180.0),
                                       sinf(c.angle * M_PI / 180.0));
       actualGridPos += c.position;
       actualGridPos.x = roundf(actualGridPos.x);
       actualGridPos.y = roundf(actualGridPos.y);
-      bool isIn = false;
-      for (const auto &n : nodes) {
-        if (compare(n, actualGridPos) < 10e-2) {
-          isIn = true;
-          break;
-        }
-      }
-      if (!isIn) {
-        nodes.emplace_back(actualGridPos);
-      }
+      nodes.emplace_back(actualGridPos);
     }
   }
   manager.updateExternalNodes(nodes);
@@ -381,10 +423,10 @@ void Editor::renderHoveredComp(int index) {
   vc = gridToScreen(vc);
   vd = gridToScreen(vd);
   ImDrawList *l = ImGui::GetWindowDrawList();
-  l->AddLine(va, vb, ImColor(255, 0, 0), 3.0);
-  l->AddLine(vb, vc, ImColor(255, 0, 0), 3.0);
-  l->AddLine(vc, vd, ImColor(255, 0, 0), 3.0);
-  l->AddLine(vd, va, ImColor(255, 0, 0), 3.0);
+  l->AddLine(va, vb, ImColor(255, 0, 0, 100), 3.0);
+  l->AddLine(vb, vc, ImColor(255, 0, 0, 100), 3.0);
+  l->AddLine(vc, vd, ImColor(255, 0, 0, 100), 3.0);
+  l->AddLine(vd, va, ImColor(255, 0, 0, 100), 3.0);
 }
 
 int Editor::getHoveredComponentIndex() {
@@ -404,9 +446,63 @@ int Editor::getHoveredComponentIndex() {
 }
 
 void Editor::renderCompPopup() {
-  if(ImGui::Button("Delete")){
+  if (ImGui::Button("Delete")) {
     placedComponents.erase(placedComponents.begin() + rightClickedComp);
     updateCompNodes();
     ImGui::CloseCurrentPopup();
   }
+  json data = placedComponents[rightClickedComp].data;
+  if (data != nullptr) {
+    if (ImGui::Button("Edit")) {
+      openEditComp = true;
+      ImGui::CloseCurrentPopup();
+    }
+  }
+}
+
+void Editor::renderDebugPins() {
+  ImDrawList *l = ImGui::GetWindowDrawList();
+  for (const auto &c : placedComponents) {
+    const auto &comp = ComponentRegistry::getComponent(c.type);
+    for (const auto &pin : comp.pins) {
+      ImVec2 actualGridPos = ImRotate(pin, cosf(c.angle * M_PI / 180.0),
+                                      sinf(c.angle * M_PI / 180.0));
+      actualGridPos += c.position;
+      actualGridPos.x = roundf(actualGridPos.x);
+      actualGridPos.y = roundf(actualGridPos.y);
+      l->AddCircleFilled(gridToScreen(actualGridPos), 8,
+                         ImColor(0, 255, 0, 50));
+    }
+  }
+}
+
+void Editor::clearCircuit() {
+  placedComponents.clear();
+  manager.clear();
+}
+
+void Editor::addComponent(const PlacedComponent &component) {
+  placedComponents.emplace_back(component);
+  updateCompNodes();
+}
+
+void Editor::addCable(const pair<ImVec2, ImVec2> &cable) {
+  manager.addCable(cable.first, cable.second);
+}
+
+bool Editor::saveCircuit(const string &filePath) {
+  return CircuitSerializer::saveCircuit(*this, filePath);
+}
+
+bool Editor::loadCircuit(const string &filePath) {
+  return CircuitSerializer::loadCircuit(*this, filePath);
+}
+
+CircuitProcessor *Editor::toCircuit() {
+  std::map<ImVec2, int, PointCompare> nodeMap;
+  int nodeCount = 0;
+  for (const auto &comp : placedComponents) {
+    // TODO
+  }
+  return nullptr;
 }

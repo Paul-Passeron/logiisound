@@ -162,4 +162,11 @@ void CableManager::updateExternalNodes(const vector<ImVec2> &ext) {
   updateJunctionNodes();
   cleanUpCables();
   updateJunctionNodes();
+  cleanUpCables();
+}
+
+void CableManager::clear() {
+cables.clear();
+junctionNodes.clear();
+externalNodes.clear();
 }

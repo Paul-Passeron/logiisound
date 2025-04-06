@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <functional>
 #include <imgui.h>
+#include <nlohmann/json.hpp>
 #include <string>
 
 using std::vector;
@@ -17,6 +18,7 @@ struct ComponentInfo {
   int xSize = 2.0;
   int ySize = 2.0;
   vector<ImVec2> pins;
+  json data;
 };
 
 class ComponentRegistry {
@@ -26,7 +28,8 @@ public:
                          const path texturePath,
                          std::function<ComponentModel *()> createFunction,
                          int xSize = 2.0, int ySize = 2.0,
-                         vector<ImVec2> pins = vector<ImVec2>(0));
+                         vector<ImVec2> pins = vector<ImVec2>(0),
+                         json data = nullptr);
 
   const std::unordered_map<std::string, ComponentInfo> &getRegistry() const;
   static ComponentInfo getComponent(std::string id);

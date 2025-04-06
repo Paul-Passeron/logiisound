@@ -151,6 +151,27 @@ void Application::renderFrame() {
                    ImGuiDockNodeFlags_PassthruCentralNode);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
+      if(ImGui::MenuItem("Open")) {
+        // editor.
+        const char *filePath = tinyfd_openFileDialog("Select a circuit", "../assets/", 0,
+                                                     nullptr, nullptr, 0);
+        if(filePath){
+          if(!editor.loadCircuit(filePath)){
+            tinyfd_messageBox("Error", "Failed to load circuit!", "ok", "error",
+                              1);
+          }
+        }
+      }
+      if(ImGui::MenuItem("Save")) {
+        const char *filePath = tinyfd_saveFileDialog("Save circuit", "../assets/", 0,
+                                                     nullptr, "");
+        if(filePath){
+          if(!editor.saveCircuit(filePath)){
+            tinyfd_messageBox("Error", "Failed to save circuit!", "ok", "error",
+                              1);
+          }
+        }
+      }
       if (ImGui::MenuItem("Exit"))
         this->isRunning = false;
       ImGui::EndMenu();

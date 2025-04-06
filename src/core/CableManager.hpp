@@ -23,4 +23,5 @@ public:
                                    const ImVec2 &b) const;
   const vector<ImVec2> &getJunctionNodes() const;
   void updateExternalNodes(const vector<ImVec2> &ext);
+  void clear();
 };

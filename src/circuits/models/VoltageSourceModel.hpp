@@ -12,4 +12,6 @@ public:
   VoltageSourceModel(double v, int p, int n);
   void setVoltage(double v);
   void stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs, double currentTime, double dt) override;
+  void fromJson(json data) override;
+
 };

@@ -1,6 +1,7 @@
 #pragma once
-#include "imgui_impl_sdl2.h"
+#include "../audio/processors/CircuitProcessor.hpp"
 #include "CableManager.hpp"
+#include "imgui_impl_sdl2.h"
 #include <imgui.h>
 #include <string>
 #include <vector>
@@ -22,6 +23,7 @@ struct PlacedComponent {
   ImVec2 position;
   float angle;
   int id;
+  json data = nullptr;
 };
 
 class Editor {
@@ -33,6 +35,7 @@ class Editor {
   ImVec2 mousePos;
   bool focused = false;
 
+  bool openEditComp = false;
   bool openCompPopup = false;
   int rightClickedComp = -1;
 
@@ -71,10 +74,27 @@ class Editor {
   void renderHoveredComp(int index);
   int getHoveredComponentIndex();
   void renderCompPopup();
-
+  void renderDebugPins();
 
 public:
   void render();
   void handleEvent(SDL_Event event);
   void setComponentId(string id);
+
+  // Serialization / Deserialization logic
+  const std::vector<PlacedComponent> &getPlacedComponents() const {
+    return placedComponents;
+  }
+  const std::vector<std::pair<ImVec2, ImVec2>> getCables() const {
+    return manager.getCables();
+  }
+
+  void clearCircuit();
+  void addComponent(const PlacedComponent &component);
+  void addCable(const pair<ImVec2, ImVec2> &cable);
+
+  bool saveCircuit(const string &filePath);
+  bool loadCircuit(const string &filePath);
+
+  CircuitProcessor *toCircuit();
 };

@@ -35,8 +35,8 @@ public:
 
   DiodeModelParameters getParameters() const;
   void setParameter(const std::string &param, double value);
-
   void stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) override;
   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
   void initializeState() override;
+  void fromJson(json data) override;
 };

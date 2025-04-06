@@ -33,3 +33,7 @@ void CapacitorModel::updateState(const Eigen::VectorXd &V,
 }
 
 void CapacitorModel::initializeState() { prevVoltage = 0.0; }
+
+void CapacitorModel::fromJson(json data) {
+  // TODO
+}

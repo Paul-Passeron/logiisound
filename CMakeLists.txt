@@ -40,6 +40,9 @@ include_directories(${PORTAUDIO_INCLUDE_DIRS})
 add_subdirectory(vendor/imgui)
 include_directories(vendor/imgui vendor/imgui/backends)
 
+add_subdirectory(vendor/nlohmann/json)
+include_directories(vendor/nlohmann/json)
+
 # Add tinyfiledialogs
 add_subdirectory(vendor/libtinyfiledialogs)
 include_directories(vendor/libtinyfiledialogs)
@@ -58,6 +61,7 @@ set(SOURCES
   src/core/Editor.cpp src/core/Editor.hpp
   src/core/CableHelper.cpp src/core/CableHelper.hpp
   src/core/CableManager.cpp src/core/CableManager.hpp
+  src/core/CircuitSerializer.cpp src/core/CircuitSerializer.hpp
 
   src/audio/processors/Processor.hpp src/audio/processors/Processor.cpp
   src/audio/processors/GainProcessor.cpp src/audio/processors/GainProcessor.hpp
@@ -101,6 +105,7 @@ target_link_libraries(logiisound
         dl
         libtinyfiledialogs
         SDL2_image
+        nlohmann_json
 )
 
 ##################################################
