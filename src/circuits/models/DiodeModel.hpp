@@ -38,5 +38,4 @@ public:
   void stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) override;
   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
   void initializeState() override;
-  void fromJson(json data) override;
 };

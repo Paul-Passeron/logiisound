@@ -18,6 +18,7 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <sndfile.h>
+#include <thread>
 #include <tinyfiledialogs.h>
 
 const char *Application::getTitle() { return "LogIISound"; }
@@ -151,22 +152,33 @@ void Application::renderFrame() {
                    ImGuiDockNodeFlags_PassthruCentralNode);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if(ImGui::MenuItem("Open")) {
+      if (ImGui::MenuItem("Open")) {
         // editor.
-        const char *filePath = tinyfd_openFileDialog("Select a circuit", "../assets/", 0,
-                                                     nullptr, nullptr, 0);
-        if(filePath){
-          if(!editor.loadCircuit(filePath)){
+        const char *filePath = tinyfd_openFileDialog(
+            "Select a circuit", "../assets/", 0, nullptr, nullptr, 0);
+        if (filePath) {
+          if (!editor.loadCircuit(filePath)) {
             tinyfd_messageBox("Error", "Failed to load circuit!", "ok", "error",
                               1);
           }
         }
       }
-      if(ImGui::MenuItem("Save")) {
-        const char *filePath = tinyfd_saveFileDialog("Save circuit", "../assets/", 0,
-                                                     nullptr, "");
-        if(filePath){
-          if(!editor.saveCircuit(filePath)){
+      if (ImGui::MenuItem("Save")) {
+        // TODO: actually solve "Not Responding issue"
+        std::string result = "";
+        std::thread dialogThread([&result]() {
+          const char *filePath = tinyfd_saveFileDialog(
+              "Save circuit", "../assets/", 0, nullptr, "");
+          if (filePath) {
+            result = filePath;
+          }
+        });
+
+        if (dialogThread.joinable()) {
+          dialogThread.join();
+        }
+        if (!result.empty()) {
+          if (!editor.saveCircuit(result)) {
             tinyfd_messageBox("Error", "Failed to save circuit!", "ok", "error",
                               1);
           }

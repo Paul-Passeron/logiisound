@@ -9,6 +9,4 @@ class ResistorModel : public ComponentModel {
 public:
   ResistorModel(double r, int n1, int n2);
   void stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs, double currentTime, double dt) override;
-  void fromJson(json data) override;
-
 };

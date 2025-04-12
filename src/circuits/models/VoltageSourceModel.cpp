@@ -31,7 +31,3 @@ void VoltageSourceModel::stamp(Eigen::MatrixXd &matrix, Eigen::VectorXd &rhs,
 }
 
 void VoltageSourceModel::setVoltage(double v) { voltage = v; }
-
-void VoltageSourceModel::fromJson(json data) {
-  // TODO
-}

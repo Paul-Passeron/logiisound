@@ -86,6 +86,20 @@ set(SOURCES
   src/circuits/models/transistors/BJTs/NPNModel.cpp src/circuits/models/transistors/BJTs/NPNModel.hpp
 
   src/circuits/ComponentRegistry.cpp src/circuits/ComponentRegistry.hpp
+
+  src/circuits/factories/ComponentFactory.hpp
+
+  src/circuits/factories/ComponentFactory.hpp
+  src/circuits/factories/CapacitorFactory.hpp
+  src/circuits/factories/CapacitorFactory.cpp
+  src/circuits/factories/ResistorFactory.cpp
+  src/circuits/factories/ResistorFactory.hpp
+  src/circuits/factories/DiodeFactory.hpp
+  src/circuits/factories/DiodeFactory.cpp
+  src/circuits/factories/VoltageSourceFactory.hpp
+  src/circuits/factories/VoltageSourceFactory.cpp
+  src/circuits/factories/NPNFactory.hpp
+  src/circuits/factories/NPNFactory.cpp
 )
 
 add_executable(logiisound ${SOURCES})

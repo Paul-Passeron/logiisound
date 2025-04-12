@@ -140,49 +140,6 @@ void NPNModel::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t,
   stampEmitterCurrent(G, I);
 }
 
-// void NPN::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
-//   double Vb = Circuit::isNodeGround(b) ? 0.0 : V(b);
-//   double Vc = Circuit::isNodeGround(c) ? 0.0 : V(c);
-//   double Ve = Circuit::isNodeGround(e) ? 0.0 : V(e);
-
-//   Vbe = Vb - Ve;
-//   Vbc = Vb - Vc;
-//   Vce = Vc - Ve;
-
-//   double If = params.Is * (exp(Vbe / Vt) - 1.0) * (1.0 + Vce / params.Vaf);
-
-//   double Ir = params.Is * (exp(Vbc / Vt) - 1.0) * (1.0 - Vce / params.Var);
-
-//   double Ise = 0.0; // default value for the moment
-//   double Isc = 0.0;
-//   double Nf = 1.0;
-//   double Ne = 1.5;
-//   double Nr = 1.0;
-//   double Nc = 2.0;
-
-//   g_0 = params.Is * exp(Vbc / Vt) / Vt;
-//   g_m = params.Is * exp(Vbe / Vt) / Vt + g_0;
-
-//   g_pi = params.Is / (Nf * Vt * params.Bf) * exp(Vbe / (Nf * Vt)) +
-//          Ise / (Ne * Vt) * exp(Vbe / (Ne * Vt));
-//   g_mu = params.Is / (Nr * Vt * params.Br) * exp(Vbc / (Nr * Vt)) +
-//          Isc / (Nc * Vt) * exp(Vbc / (Nc * Vt));
-
-//   double Ibe_i = If / params.Bf;
-//   double Ibe_n = Ise * exp(Vbe / (Ne * Vt) - 1.0);
-//   double Ibe = Ibe_i + Ibe_n;
-
-//   double Ibc_i = Ir / params.Br;
-//   double Ibc_n = Isc * (exp(Vbc / (Nc * Vt)) - 1.0);
-//   double Ibc = Ibc_i + Ibc_n;
-
-//   double I_t = params.Is * (exp(Vbe / Vt) + exp(Vbc / Vt));
-
-//   IBE_eq = Ibe - g_pi * Vbe;
-//   IBC_eq = Ibc * g_mu * Vbc;
-//   ICE_eq = I_t - g_m * Vbe + g_0 * Vce;
-// }
-
 void NPNModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
   // Get node voltages
   double Vb = Circuit::isNodeGround(b) ? 0.0 : V(b);
@@ -255,8 +212,4 @@ void NPNModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
       Ibc -
       g_mu * Vbc_clamped; // Fixed a probable bug here (was Ibc * g_mu * Vbc)
   ICE_eq = I_t - g_m * Vbe_clamped + g_0 * Vce;
-}
-
-void NPNModel::fromJson(json data) {
-  // TODO
 }

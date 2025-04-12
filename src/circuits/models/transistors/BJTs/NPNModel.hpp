@@ -68,6 +68,5 @@ public:
   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
 
   void initializeState() override;
-  void fromJson(json data) override;
 
 };

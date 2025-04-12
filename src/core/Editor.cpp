@@ -437,13 +437,13 @@ void Editor::renderHoveredComp(int index) {
   float sina = sinf(c.angle * M_PI / 180);
   float cosa = cosf(c.angle * M_PI / 180);
   ImVec2 va =
-      ImRotate(c.position - ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
+      c.position - ImRotate(ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
   ImVec2 vc =
-      ImRotate(c.position + ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
+      c.position + ImRotate(ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
   ImVec2 vb =
-      ImRotate(c.position - ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
+      c.position - ImRotate(ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
   ImVec2 vd =
-      ImRotate(c.position + ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
+      c.position + ImRotate(ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
   va = gridToScreen(va);
   vb = gridToScreen(vb);
   vc = gridToScreen(vc);

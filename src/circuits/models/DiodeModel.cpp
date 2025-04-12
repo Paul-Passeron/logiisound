@@ -90,7 +90,3 @@ void DiodeModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I)
   currentCurrent = params.Is * (exp_term - 1);
   conductance = (params.Is / (params.N * Vt)) * exp_term;
 }
-
-void DiodeModel::fromJson(json data) {
-  // TODO
-}
