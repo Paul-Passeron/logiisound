@@ -12,7 +12,6 @@
 #include <iostream>
 
 // TODO:
-// - maybe outsource cable management to a distinct class ?
 // - Be able to interact with placed components
 
 const float Editor::hoverDistance = 0.3f;

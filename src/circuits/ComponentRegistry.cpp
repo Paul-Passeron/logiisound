@@ -1,10 +1,6 @@
 #include "ComponentRegistry.hpp"
 #include "../core/Application.hpp"
 #include "imgui.h"
-#include "models/CapacitorModel.hpp"
-#include "models/DiodeModel.hpp"
-#include "models/ResistorModel.hpp"
-#include "models/transistors/BJTs/NPNModel.hpp"
 #include <SDL_image.h>
 #include <iostream>
 #include <stdexcept>

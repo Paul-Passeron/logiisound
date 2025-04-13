@@ -80,6 +80,15 @@ NPNModel::NPNModel(int b, int c, int e, const NPNModelParameters &customParams)
 }
 
 void NPNModel::initializeState() {
+  if (models.size() != modelLibrary.size()) {
+    models.clear();
+    models.resize(modelLibrary.size());
+    int i = 0;
+    for (const auto &[k, _] : modelLibrary) {
+      models[i++] = k;
+    }
+  }
+
   // Reset all state variables
   Ic = 0.0;
   Ib = 0.0;
@@ -213,3 +222,7 @@ void NPNModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
       g_mu * Vbc_clamped; // Fixed a probable bug here (was Ibc * g_mu * Vbc)
   ICE_eq = I_t - g_m * Vbe_clamped + g_0 * Vce;
 }
+
+vector<string> NPNModel::models;
+
+const vector<string> &NPNModel::getModels() { return models; }

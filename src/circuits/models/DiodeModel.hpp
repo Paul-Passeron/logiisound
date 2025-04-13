@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ComponentModel.hpp"
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
+
+using std::string;
 
 struct DiodeModelParameters {
   double Is;  // Saturation current
@@ -14,9 +16,12 @@ struct DiodeModelParameters {
 };
 
 class DiodeModel : public ComponentModel {
+protected:
+  static vector<string> models;
+
 private:
   int anode, cathode;
-  double Vt;  // Thermal voltage
+  double Vt; // Thermal voltage
 
   DiodeModelParameters params;
   std::string model;
@@ -35,7 +40,9 @@ public:
 
   DiodeModelParameters getParameters() const;
   void setParameter(const std::string &param, double value);
-  void stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) override;
+  void stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t,
+             double dt) override;
   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
   void initializeState() override;
+  static const vector<string> &getModels();
 };

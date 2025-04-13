@@ -23,18 +23,18 @@ DiodeModelParameters bat41Parameters = {
     .Tt = 0.0      // Transit time; typically negligible
 };
 
-std::unordered_map<std::string, DiodeModelParameters> DiodeModel::modelLibrary = {
-    {"1N4148",
-     {.Is = 2.52e-9,
-      .N = 1.752,
-      .Vj = 0.7,
-      .M = 0.342,
-      .Cj0 = 4e-12,
-      .Tt = 0.0}},
-    {"1N34A",
-     {.Is = 2.52e-9, .N = 1.0, .Vj = 0.3, .M = 0.5, .Cj0 = 2e-12, .Tt = 0.0}},
-    {"1N5817", oneN5817Parameters},
-    {"BAT41", bat41Parameters}};
+std::unordered_map<std::string, DiodeModelParameters> DiodeModel::modelLibrary =
+    {{"1N4148",
+      {.Is = 2.52e-9,
+       .N = 1.752,
+       .Vj = 0.7,
+       .M = 0.342,
+       .Cj0 = 4e-12,
+       .Tt = 0.0}},
+     {"1N34A",
+      {.Is = 2.52e-9, .N = 1.0, .Vj = 0.3, .M = 0.5, .Cj0 = 2e-12, .Tt = 0.0}},
+     {"1N5817", oneN5817Parameters},
+     {"BAT41", bat41Parameters}};
 
 DiodeModel::DiodeModel(int anode, int cathode, const std::string &modelName)
     : anode(anode), cathode(cathode), Vt(0.026) {
@@ -46,14 +46,24 @@ DiodeModel::DiodeModel(int anode, int cathode, const std::string &modelName)
   initializeState();
 }
 
-DiodeModel::DiodeModel(int anode, int cathode, const DiodeModelParameters &customParams)
+DiodeModel::DiodeModel(int anode, int cathode,
+                       const DiodeModelParameters &customParams)
     : anode(anode), cathode(cathode), Vt(0.026), params(customParams),
       model("Custom") {
-
   initializeState();
 }
 
 void DiodeModel::initializeState() {
+  if (modelLibrary.size() != models.size()) {
+    if (!models.empty()) {
+      models.clear();
+    }
+    models.resize(modelLibrary.size());
+    int i = 0;
+    for (const auto [k, _] : modelLibrary) {
+      models[i++] = k;
+    }
+  }
   currentVoltage = 0.0;
   currentCurrent = 0.0;
   conductance = 1e-9; // Tiny conductance to avoid division by zero
@@ -76,11 +86,13 @@ void DiodeModel::stampCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   }
 }
 
-void DiodeModel::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t, double dt) {
+void DiodeModel::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t,
+                       double dt) {
   stampCurrent(G, I);
 }
 
-void DiodeModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) {
+void DiodeModel::updateState(const Eigen::VectorXd &V,
+                             const Eigen::VectorXd &I) {
   double vAnode = Circuit::isNodeGround(anode) ? 0.0 : V(anode);
   double vCathode = Circuit::isNodeGround(cathode) ? 0.0 : V(cathode);
 
@@ -90,3 +102,7 @@ void DiodeModel::updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I)
   currentCurrent = params.Is * (exp_term - 1);
   conductance = (params.Is / (params.N * Vt)) * exp_term;
 }
+
+const vector<string> &DiodeModel::getModels() { return models; }
+
+vector<string> DiodeModel::models;

@@ -2,6 +2,8 @@
 
 #include "../../ComponentModel.hpp"
 
+using std::string;
+
 struct NPNModelParameters {
   double Is;   // Sat. current
   double Bf;   // Forward beta
@@ -21,6 +23,8 @@ struct NPNModelParameters {
 
 class NPNModel : public ComponentModel {
 private:
+  static vector<string> models;
+
   int b, c, e; // Base, Collector, Emitter nodes
   double Vt;   // Thermal voltage (≈26mV at room temperature)
   double Is;   // Saturation current
@@ -54,10 +58,10 @@ private:
 
 public:
   NPNModel(int b, int c, int e,
-      const std::string &modelName);     // Use predefined model
+           const std::string &modelName);     // Use predefined model
   NPNModel(int b, int c, int e, double beta); // Simple model with custom beta
   NPNModel(int b, int c, int e,
-      const NPNModelParameters &customParams); // Fully custom model
+           const NPNModelParameters &customParams); // Fully custom model
 
   NPNModelParameters getParameters() const;
   void setParameter(const std::string &param, double value);
@@ -68,5 +72,5 @@ public:
   void updateState(const Eigen::VectorXd &V, const Eigen::VectorXd &I) override;
 
   void initializeState() override;
-
+  static const vector<string> &getModels();
 };
