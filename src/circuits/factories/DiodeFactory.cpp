@@ -37,8 +37,9 @@ void *DiodeFactory::getTexture() const { return texture; }
 
 pair<int, int> DiodeFactory::getSize() const { return {2, 2}; }
 
-vector<pair<int, int>> DiodeFactory::getPins() const {
-  return {{-1, 0}, {1, 0}};
+const vector<pair<int, int>> &DiodeFactory::getPins() const {
+  static const vector<pair<int, int>> pins = {{-1, 0}, {1, 0}};
+  return pins;
 }
 
 void *DiodeFactory::texture = nullptr;
@@ -47,7 +48,7 @@ DiodeFactory::DiodeFactory() {
   if (texture == nullptr) {
     SDL_Renderer *renderer = Application::getInstance()->getRenderer();
     path texturePath = std::filesystem::current_path().parent_path() /
-                       "assets/icons/resistor.png";
+                       "assets/icons/diode.png";
     texture = IMG_LoadTexture(renderer, texturePath.c_str());
   }
 }

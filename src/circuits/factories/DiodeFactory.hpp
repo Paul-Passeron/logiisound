@@ -5,6 +5,8 @@
 class DiodeFactory : public ComponentFactory {
 protected:
   static void *texture;
+
+public:
   ~DiodeFactory() = default;
   DiodeFactory();
   ComponentModel *fromJson(const json &data, const int *pins,
@@ -13,5 +15,5 @@ protected:
   json getDefaultJson() const override;
   void *getTexture() const override;
   pair<int, int> getSize() const override;
-  vector<pair<int, int>> getPins() const override;
+  const vector<pair<int, int>> &getPins() const override;
 };

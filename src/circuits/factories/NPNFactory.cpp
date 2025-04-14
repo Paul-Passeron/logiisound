@@ -37,15 +37,16 @@ void *NPNFactory::getTexture() const { return texture; }
 
 pair<int, int> NPNFactory::getSize() const { return {2, 2}; }
 
-vector<pair<int, int>> NPNFactory::getPins() const {
-  return {{0, -1}, {0, 1}, {-1, 0}};
+const vector<pair<int, int>> &NPNFactory::getPins() const {
+  static const vector<pair<int, int>> pins = {{0, -1}, {0, 1}, {-1, 0}};
+  return pins;
 }
 
 NPNFactory::NPNFactory() {
   if (texture == nullptr) {
     SDL_Renderer *renderer = Application::getInstance()->getRenderer();
     path texturePath =
-        std::filesystem::current_path().parent_path() / "assets/icons/NPN.png";
+        std::filesystem::current_path().parent_path() / "assets/icons/npn.png";
     texture = IMG_LoadTexture(renderer, texturePath.c_str());
   }
 }

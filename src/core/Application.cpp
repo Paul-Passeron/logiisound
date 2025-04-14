@@ -17,6 +17,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
+#include <iostream>
 #include <sndfile.h>
 #include <thread>
 #include <tinyfiledialogs.h>
@@ -113,9 +114,12 @@ void Application::renderComponentView() {
   ImGui::BeginGroup();
   for (auto comp : ComponentRegistry::instance().getRegistry()) {
     ImGui::PushID(i++);
-    int w = 16.0 * comp.second.xSize;
-    int h = 16.0 * comp.second.ySize;
-    if (ImGui::ImageButton("##", (ImTextureID)comp.second.previewTexture,
+    pair<int, int> size = comp.second->getSize();
+    int xSize = size.first;
+    int ySize = size.second;
+    int w = 16.0 * xSize;
+    int h = 16.0 * ySize;
+    if (ImGui::ImageButton("##", (ImTextureID)comp.second->getTexture(),
                            ImVec2(w, h))) {
       editor.setComponentId(comp.first);
     }

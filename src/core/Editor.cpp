@@ -302,9 +302,12 @@ void Editor::renderComponentPreview() {
   ImVec2 snappedGridPos =
       ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
   ImVec2 snappedScreenPos = gridToScreen(snappedGridPos);
-  ComponentInfo comp = ComponentRegistry::getComponent(current_component_id);
-  ImageRotated((ImTextureID)comp.previewTexture, snappedScreenPos,
-               ImVec2(comp.xSize, comp.ySize) * scaleFactor, angle,
+  ComponentFactory* comp = ComponentRegistry::getComponent(current_component_id);
+  pair<int, int> size = comp->getSize();
+  int xSize = size.first;
+  int ySize = size.second;
+  ImageRotated((ImTextureID)comp->getTexture(), snappedScreenPos,
+               ImVec2(xSize, ySize) * scaleFactor, angle,
                ImColor(255, 255, 255, 150));
 }
 
@@ -384,7 +387,7 @@ void Editor::placeCurrentComponent() {
     ImVec2 mouseGridPos = screenToGrid(mousePos);
     comp.position = ImVec2(roundf(mouseGridPos.x), roundf(mouseGridPos.y));
     comp.type = current_component_id;
-    comp.data = ComponentRegistry::getComponent(comp.type).data;
+    comp.data = ComponentRegistry::getComponent(comp.type)->getDefaultJson();
     addComponent(comp);
   }
 }
@@ -394,9 +397,10 @@ void Editor::updateCompNodes() {
   double scaleFactor = getScaleFactor();
   PointCompare compare;
   for (auto c : placedComponents) {
-    ComponentInfo comp = ComponentRegistry::getComponent(c.type);
-    for (const auto &p : comp.pins) {
-      ImVec2 actualGridPos = ImRotate(p, cosf(c.angle * M_PI / 180.0),
+    ComponentFactory *comp = ComponentRegistry::getComponent(c.type);
+    for (const auto &p : comp->getPins()) {
+      ImVec2 pin(p.first, p.second);
+      ImVec2 actualGridPos = ImRotate(pin, cosf(c.angle * M_PI / 180.0),
                                       sinf(c.angle * M_PI / 180.0));
       actualGridPos += c.position;
       actualGridPos.x = roundf(actualGridPos.x);
@@ -410,9 +414,10 @@ void Editor::updateCompNodes() {
 void Editor::renderComponents() {
   double scaleFactor = getScaleFactor();
   for (auto c : placedComponents) {
-    ComponentInfo comp = ComponentRegistry::getComponent(c.type);
-    ImageRotated((ImTextureID)comp.previewTexture, gridToScreen(c.position),
-                 ImVec2(comp.xSize, comp.ySize) * scaleFactor, c.angle);
+    ComponentFactory *comp = ComponentRegistry::getComponent(c.type);
+    pair<int, int> size = comp->getSize();
+    ImageRotated((ImTextureID)comp->getTexture(), gridToScreen(c.position),
+                 ImVec2(size.first, size.second) * scaleFactor, c.angle);
   }
 }
 
@@ -432,17 +437,16 @@ void Editor::renderHoveredComp(int index) {
     return;
   }
   PlacedComponent c = placedComponents[index];
-  ComponentInfo comp = ComponentRegistry::getComponent(c.type);
+  ComponentFactory *comp = ComponentRegistry::getComponent(c.type);
   float sina = sinf(c.angle * M_PI / 180);
   float cosa = cosf(c.angle * M_PI / 180);
-  ImVec2 va =
-      c.position - ImRotate(ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
-  ImVec2 vc =
-      c.position + ImRotate(ImVec2(comp.xSize, comp.ySize) / 2, cosa, sina);
-  ImVec2 vb =
-      c.position - ImRotate(ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
-  ImVec2 vd =
-      c.position + ImRotate(ImVec2(comp.xSize, -comp.ySize) / 2, cosa, sina);
+  pair<int, int> size = comp->getSize();
+  int xSize = size.first;
+  int ySize = size.second;
+  ImVec2 va = c.position - ImRotate(ImVec2(xSize, ySize) / 2, cosa, sina);
+  ImVec2 vc = c.position + ImRotate(ImVec2(xSize, ySize) / 2, cosa, sina);
+  ImVec2 vb = c.position - ImRotate(ImVec2(xSize, -ySize) / 2, cosa, sina);
+  ImVec2 vd = c.position + ImRotate(ImVec2(xSize, -ySize) / 2, cosa, sina);
   va = gridToScreen(va);
   vb = gridToScreen(vb);
   vc = gridToScreen(vc);
@@ -459,9 +463,12 @@ int Editor::getHoveredComponentIndex() {
   int index = -1;
   for (const auto &c : placedComponents) {
     index++;
-    const ComponentInfo &comp = ComponentRegistry::getComponent(c.type);
-    ImVec2 b = c.position - ImVec2(comp.xSize, comp.ySize) / 2;
-    ImVec2 a = c.position + ImVec2(comp.xSize, comp.ySize) / 2;
+    ComponentFactory *comp = ComponentRegistry::getComponent(c.type);
+    pair<int, int> size = comp->getSize();
+    int xSize = size.first;
+    int ySize = size.second;
+    ImVec2 b = c.position - ImVec2(xSize, ySize) / 2;
+    ImVec2 a = c.position + ImVec2(xSize, ySize) / 2;
     if (mouseGridPos.x <= a.x && mouseGridPos.y <= a.y &&
         mouseGridPos.x >= b.x && mouseGridPos.y >= b.y) {
       return index;
@@ -489,7 +496,8 @@ void Editor::renderDebugPins() {
   ImDrawList *l = ImGui::GetWindowDrawList();
   for (const auto &c : placedComponents) {
     const auto &comp = ComponentRegistry::getComponent(c.type);
-    for (const auto &pin : comp.pins) {
+    for (const auto &p : comp->getPins()) {
+      ImVec2 pin(p.first, p.second);
       ImVec2 actualGridPos = ImRotate(pin, cosf(c.angle * M_PI / 180.0),
                                       sinf(c.angle * M_PI / 180.0));
       actualGridPos += c.position;

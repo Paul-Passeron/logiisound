@@ -1,14 +1,19 @@
 #pragma once
 
 #include "ComponentFactory.hpp"
+#include <filesystem>
+#include <unordered_map>
 
-class NPNFactory : public ComponentFactory {
+using std::filesystem::path;
+
+class NonComponentFactory : public ComponentFactory {
 protected:
-  static void *texture;
-
+  static std::unordered_map<path, void *> textureMap;
+  path texturePath;
+  vector<pair<int, int>> pins;
 public:
-  ~NPNFactory() = default;
-  NPNFactory();
+  ~NonComponentFactory();
+  NonComponentFactory(path texturePath, const vector<pair<int, int>> pins);
   ComponentModel *fromJson(const json &data, const int *pins,
                            const size_t &nPins) override;
   string getComponentType() const override;

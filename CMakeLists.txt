@@ -100,6 +100,8 @@ set(SOURCES
   src/circuits/factories/VoltageSourceFactory.cpp
   src/circuits/factories/NPNFactory.hpp
   src/circuits/factories/NPNFactory.cpp
+  src/circuits/factories/NonComponentFactory.cpp
+  src/circuits/factories/NonComponentFactory.hpp
 )
 
 add_executable(logiisound ${SOURCES})

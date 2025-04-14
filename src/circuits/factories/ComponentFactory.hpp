@@ -16,5 +16,6 @@ public:
   virtual json getDefaultJson() const = 0;
   virtual void *getTexture() const = 0;
   virtual pair<int, int> getSize() const = 0;
-  virtual vector<pair<int, int>> getPins() const = 0;
+  virtual const vector<pair<int, int>> &getPins() const = 0;
+  void renderPreview(SDL_Renderer *renderer, const SDL_Rect &rect);
 };

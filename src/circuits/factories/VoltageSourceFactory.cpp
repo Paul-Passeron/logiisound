@@ -35,8 +35,9 @@ void *VoltageSourceFactory::getTexture() const { return texture; }
 
 pair<int, int> VoltageSourceFactory::getSize() const { return {2, 2}; }
 
-vector<pair<int, int>> VoltageSourceFactory::getPins() const {
-  return {{-1, 0}, {1, 0}};
+const vector<pair<int, int>> &VoltageSourceFactory::getPins() const {
+  static const vector<pair<int, int>> pins = {{-1, 0}, {1, 0}};
+  return pins;
 }
 
 VoltageSourceFactory::VoltageSourceFactory() {

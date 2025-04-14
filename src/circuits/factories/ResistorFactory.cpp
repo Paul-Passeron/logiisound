@@ -35,8 +35,9 @@ void *ResistorFactory::getTexture() const { return texture; }
 
 pair<int, int> ResistorFactory::getSize() const { return {2, 2}; }
 
-vector<pair<int, int>> ResistorFactory::getPins() const {
-  return {{-1, 0}, {1, 0}};
+const vector<pair<int, int>> &ResistorFactory::getPins()const {
+  static const vector<pair<int, int>> pins =  {{-1, 0}, {1, 0}};
+  return pins;
 }
 
 ResistorFactory::ResistorFactory() {
