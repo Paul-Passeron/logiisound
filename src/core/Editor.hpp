@@ -45,6 +45,7 @@ class Editor {
   ImVec2 lastPoint;
   CableManager manager;
   std::vector<PlacedComponent> placedComponents;
+  std::vector<std::vector<pair<int, int>>> nodeFamilies;
 
   double getScaleFactor() const;
   void renderGrid();
@@ -95,6 +96,9 @@ public:
 
   bool saveCircuit(const string &filePath);
   bool loadCircuit(const string &filePath);
+
+  void updateNodeFamilies();
+  bool verifyNodeFamilies();
 
   CircuitProcessor *toCircuit();
 };

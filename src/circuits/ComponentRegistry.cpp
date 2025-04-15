@@ -7,8 +7,6 @@
 #include "factories/NonComponentFactory.hpp"
 #include "factories/ResistorFactory.hpp"
 #include "factories/VoltageSourceFactory.hpp"
-#include "imgui.h"
-#include "models/CapacitorModel.hpp"
 #include <SDL_image.h>
 #include <filesystem>
 #include <iostream>
@@ -46,7 +44,6 @@ void registerComponents() {
   reg.registerFactory("cap", new CapacitorFactory());
   reg.registerFactory("src", new VoltageSourceFactory());
   path prefix = std::filesystem::current_path().parent_path() / "assets/icons";
-  std::cout << prefix << std::endl;
   reg.registerFactory(
       "gnd", new NonComponentFactory(prefix / "ground.png", {{0, -1}}));
   reg.registerFactory("in",

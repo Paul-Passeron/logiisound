@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../audio/engine/AudioEngine.hpp"
+#include "../audio/processors/ChainProcessor.hpp"
 #include "Editor.hpp"
 #include <SDL_video.h>
 #include <eigen3/Eigen/Dense>
@@ -12,6 +13,7 @@ using std::pair;
 using std::string;
 
 class Application {
+protected:
   SDL_Window *window = nullptr;
   SDL_GLContext glContext;
   ImGuiIO *io = nullptr;
@@ -19,10 +21,10 @@ class Application {
   SDL_Renderer *renderer;
   AudioEngine *engine = nullptr;
   Editor editor;
+  ChainProcessor *circuitBox;
 
   bool isAudioPlaying = false;
   static Application *instance;
-
 
 public:
   Application();

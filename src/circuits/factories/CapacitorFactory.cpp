@@ -17,7 +17,7 @@ ComponentModel *CapacitorFactory::fromJson(const json &data,
   if (!data.contains("c")) {
     throw std::runtime_error("Malformed json: Expected \'c\' field.");
   }
-  float c = data["c"].get<float>();
+  float c = data["c"]["value"].get<float>();
   return new CapacitorModel(c, pins[0], pins[1]);
 }
 

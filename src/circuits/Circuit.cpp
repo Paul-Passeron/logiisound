@@ -45,7 +45,7 @@ void Circuit::solveTransient(double start, double dt, size_t numSamples,
     // Initialize state from previous timestep
     Eigen::VectorXd V_prev = V; // Store previous solution
 
-    const int MAX_ITERATIONS = 2;
+    const int MAX_ITERATIONS = 10;
     const double CONVERGENCE_THRESHOLD = 1e-5;
     bool converged = false;
     double error = 0;

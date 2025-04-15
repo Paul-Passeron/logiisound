@@ -18,6 +18,7 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <iostream>
+#include <portaudio.h>
 #include <sndfile.h>
 #include <thread>
 #include <tinyfiledialogs.h>
@@ -35,11 +36,14 @@ void Application::init() {
   this->initImGui();
   printf("[INFO]: Application initialization successful !\n");
   ChainProcessor *processor = new ChainProcessor();
+  // processor->addProcessor(new FilePlayer());
   processor->addProcessor(new ScopeProcessor());
 
   ChainProcessor *circuitChain = new ChainProcessor();
   circuitChain->addProcessor(new GainProcessor());
-  circuitChain->addProcessor(PedalProcessors::FuzzProcessor());
+  circuitBox = new ChainProcessor();
+  circuitBox->addProcessor(PedalProcessors::FuzzProcessor());
+  circuitChain->addProcessor(circuitBox);
   SwitchProcessor *sw = new SwitchProcessor(circuitChain);
 
   processor->addProcessor(sw);
@@ -265,6 +269,8 @@ void Application::handleEvent(SDL_Event event) {
 }
 
 void Application::onPlayPressed() {
+  circuitBox->clear();
+  circuitBox->addProcessor(editor.toCircuit());
   if (!this->isAudioPlaying) {
     this->isAudioPlaying = true;
     engine->start();

@@ -30,6 +30,8 @@ private:
   double currentCurrent;
   double conductance;
 
+  double equivalentCurrent;
+
   static std::unordered_map<std::string, DiodeModelParameters> modelLibrary;
 
   void stampCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I);

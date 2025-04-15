@@ -17,7 +17,7 @@ ComponentModel *ResistorFactory::fromJson(const json &data,
   if (!data.contains("r")) {
     throw std::runtime_error("Malformed json: Expected \'r\' field.");
   }
-  float r = data["r"].get<float>();
+  float r = data["r"]["value"].get<float>();
   return new ResistorModel(r, pins[0], pins[1]);
 }
 
@@ -35,8 +35,8 @@ void *ResistorFactory::getTexture() const { return texture; }
 
 pair<int, int> ResistorFactory::getSize() const { return {2, 2}; }
 
-const vector<pair<int, int>> &ResistorFactory::getPins()const {
-  static const vector<pair<int, int>> pins =  {{-1, 0}, {1, 0}};
+const vector<pair<int, int>> &ResistorFactory::getPins() const {
+  static const vector<pair<int, int>> pins = {{-1, 0}, {1, 0}};
   return pins;
 }
 

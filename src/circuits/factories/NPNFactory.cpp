@@ -22,7 +22,7 @@ ComponentModel *NPNFactory::fromJson(const json &data, const int *const pins,
     throw std::runtime_error(
         "Malformed json: Expected \'value\' field in \'model\'.");
   }
-  string value = data["value"];
+  string value = model["value"].get<string>();
   return new NPNModel(pins[0], pins[1], pins[2], value);
 }
 
@@ -38,7 +38,7 @@ void *NPNFactory::getTexture() const { return texture; }
 pair<int, int> NPNFactory::getSize() const { return {2, 2}; }
 
 const vector<pair<int, int>> &NPNFactory::getPins() const {
-  static const vector<pair<int, int>> pins = {{0, -1}, {0, 1}, {-1, 0}};
+  static const vector<pair<int, int>> pins = {{-1, 0}, {0, -1}, {0, 1}};
   return pins;
 }
 

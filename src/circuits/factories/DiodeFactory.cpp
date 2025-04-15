@@ -22,7 +22,7 @@ ComponentModel *DiodeFactory::fromJson(const json &data, const int *const pins,
     throw std::runtime_error(
         "Malformed json: Expected \'value\' field in \'model\'.");
   }
-  string value = data["value"];
+  string value = model["value"];
   return new DiodeModel(pins[0], pins[1], value);
 }
 

@@ -14,4 +14,5 @@ public:
   void process(float **inputBuffer, float **outputBuffer,
                size_t numSamples) override;
   void addProcessor(Processor *p);
+  void clear();
 };

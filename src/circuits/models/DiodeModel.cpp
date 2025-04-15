@@ -5,6 +5,13 @@
 #include <cmath>
 #include <stdexcept>
 
+DiodeModelParameters bat46Parameters = {.Is = 3e-7, // Higher saturation current
+                                        .N = 1.08,  // Emission coefficient
+                                        .Vj = 0.7, // Higher junction potential
+                                        .M = 0.45,
+                                        .Cj0 = 85e-12,
+                                        .Tt = 0.0};
+
 DiodeModelParameters oneN5817Parameters = {
     .Is = 1e-6, // Saturation current; higher for Schottky diodes
     .N = 1.2,   // Emission coefficient; slightly higher due to Schottky nature
@@ -24,17 +31,25 @@ DiodeModelParameters bat41Parameters = {
 };
 
 std::unordered_map<std::string, DiodeModelParameters> DiodeModel::modelLibrary =
-    {{"1N4148",
-      {.Is = 2.52e-9,
-       .N = 1.752,
-       .Vj = 0.7,
-       .M = 0.342,
-       .Cj0 = 4e-12,
-       .Tt = 0.0}},
-     {"1N34A",
-      {.Is = 2.52e-9, .N = 1.0, .Vj = 0.3, .M = 0.5, .Cj0 = 2e-12, .Tt = 0.0}},
-     {"1N5817", oneN5817Parameters},
-     {"BAT41", bat41Parameters}};
+    {
+        {"1N4148",
+         {.Is = 2.52e-9,
+          .N = 1.752,
+          .Vj = 0.7,
+          .M = 0.342,
+          .Cj0 = 4e-12,
+          .Tt = 0.0}},
+        {"1N34A",
+         {.Is = 2.52e-9,
+          .N = 1.0,
+          .Vj = 0.3,
+          .M = 0.5,
+          .Cj0 = 2e-12,
+          .Tt = 0.0}},
+        {"1N5817", oneN5817Parameters},
+        {"BAT41", bat41Parameters},
+        {"BAT46", bat46Parameters},
+};
 
 DiodeModel::DiodeModel(int anode, int cathode, const std::string &modelName)
     : anode(anode), cathode(cathode), Vt(0.026) {
@@ -71,14 +86,14 @@ void DiodeModel::initializeState() {
 
 void DiodeModel::stampCurrent(Eigen::MatrixXd &G, Eigen::VectorXd &I) {
   if (!Circuit::isNodeGround(anode)) {
-    I(anode) -= currentCurrent;
+    I(anode) -= equivalentCurrent; // Use equivalentCurrent instead
     G(anode, anode) += conductance;
     if (!Circuit::isNodeGround(cathode)) {
       G(anode, cathode) -= conductance;
     }
   }
   if (!Circuit::isNodeGround(cathode)) {
-    I(cathode) += currentCurrent;
+    I(cathode) += equivalentCurrent;
     G(cathode, cathode) += conductance;
     if (!Circuit::isNodeGround(anode)) {
       G(cathode, anode) -= conductance;
@@ -91,6 +106,18 @@ void DiodeModel::stamp(Eigen::MatrixXd &G, Eigen::VectorXd &I, double t,
   stampCurrent(G, I);
 }
 
+// void DiodeModel::updateState(const Eigen::VectorXd &V,
+//                              const Eigen::VectorXd &I) {
+//   double vAnode = Circuit::isNodeGround(anode) ? 0.0 : V(anode);
+//   double vCathode = Circuit::isNodeGround(cathode) ? 0.0 : V(cathode);
+
+//   currentVoltage = vAnode - vCathode;
+//   double exp_term = exp(currentVoltage / (params.N * Vt));
+
+//   currentCurrent = params.Is * (exp_term - 1);
+//   conductance = (params.Is / (params.N * Vt)) * exp_term;
+// }
+//
 void DiodeModel::updateState(const Eigen::VectorXd &V,
                              const Eigen::VectorXd &I) {
   double vAnode = Circuit::isNodeGround(anode) ? 0.0 : V(anode);
@@ -101,6 +128,9 @@ void DiodeModel::updateState(const Eigen::VectorXd &V,
 
   currentCurrent = params.Is * (exp_term - 1);
   conductance = (params.Is / (params.N * Vt)) * exp_term;
+
+  // Calculate the equivalent current source
+  equivalentCurrent = currentCurrent - conductance * currentVoltage;
 }
 
 const vector<string> &DiodeModel::getModels() { return models; }

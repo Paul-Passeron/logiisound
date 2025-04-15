@@ -17,7 +17,7 @@ ComponentModel *VoltageSourceFactory::fromJson(const json &data,
   if (!data.contains("v")) {
     throw std::runtime_error("Malformed json: Expected \'v\' field.");
   }
-  float v = data["v"].get<float>();
+  float v = data["v"]["value"].get<float>();
   return new VoltageSourceModel(v, pins[0], pins[1]);
 }
 

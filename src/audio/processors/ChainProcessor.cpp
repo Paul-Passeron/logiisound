@@ -37,3 +37,6 @@ void ChainProcessor::addProcessor(Processor *p) {
 }
 
 ChainProcessor::ChainProcessor() : Processor() {}
+void ChainProcessor::clear() {
+  processors.clear();
+}

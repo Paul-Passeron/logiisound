@@ -3,7 +3,6 @@
 #include "factories/ComponentFactory.hpp"
 #include "models/ComponentModel.hpp"
 #include <filesystem>
-#include <functional>
 #include <imgui.h>
 #include <nlohmann/json.hpp>
 #include <string>
