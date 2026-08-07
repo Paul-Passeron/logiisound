@@ -31,10 +31,12 @@ find_package(OpenGL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLEW REQUIRED glew)
 include_directories(${GLEW_INCLUDE_DIRS})
+link_directories(${GLEW_LIBRARY_DIRS})
 
 # Find PortAudio
 pkg_check_modules(PORTAUDIO REQUIRED portaudio-2.0)
 include_directories(${PORTAUDIO_INCLUDE_DIRS})
+link_directories(${PORTAUDIO_LIBRARY_DIRS})
 
 # Add ImGui
 add_subdirectory(vendor/imgui)
@@ -50,6 +52,7 @@ include_directories(vendor/libtinyfiledialogs)
 # Add sndfile
 pkg_check_modules(SNDFILE REQUIRED sndfile)
 include_directories(${SNDFILE_INCLUDE_DIRS})
+link_directories(${SNDFILE_LIBRARY_DIRS})
 
 ##################################################
 
@@ -110,17 +113,15 @@ add_executable(logiisound ${SOURCES})
 ##################################################
 # Link libraries
 target_link_libraries(logiisound
-        ${SDL2_image_LIBRARIES}
+        SDL2_image::SDL2_image
         ${GLEW_LIBRARIES}
         ${OPENGL_LIBRARIES}
         ${SDL2_LIBRARIES}
         ${PORTAUDIO_LIBRARIES}
         ${SNDFILE_LIBRARIES}
         imgui
-        glfw
         dl
         libtinyfiledialogs
-        SDL2_image
         nlohmann_json
 )
 
